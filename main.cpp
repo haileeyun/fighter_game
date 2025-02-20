@@ -51,7 +51,8 @@ constexpr GLint NUMBER_OF_TEXTURES = 1, // to be generated, that is
                 TEXTURE_BORDER     = 0; // this value MUST be zero
 
 constexpr char BLACK_CAT_SPRITE_FILEPATH[]   = "shaders/black_cat.png",
-               BUTTERFLY_SPRITE_FILEPATH[] = "shaders/butterfly.png";
+               BUTTERFLY_SPRITE_FILEPATH[] = "shaders/butterfly.png",
+               DOUGHNUT_SPRITE_FILEPATH[] = "shaders/doughnut.png";
 
 constexpr float MINIMUM_COLLISION_DISTANCE = 1.0f;
 
@@ -60,8 +61,10 @@ constexpr float MINIMUM_COLLISION_DISTANCE = 1.0f;
 constexpr glm::vec3 INIT_SCALE      = glm::vec3(2.0f, 2.0f, 0.0f),
                     INIT_SCALE_BLACK_CAT = glm::vec3(2.0f, 2.0f, 0.0f),
                     INIT_SCALE_BUTTERFLY = glm::vec3(2.0f, 2.0f, 0.0f),
+                    INIT_SCALE_DOUGHNUT = glm::vec3(1.0f, 1.0f, 0.0f),
                     INIT_POS_BLACK_CAT   = glm::vec3(4.0f, 0.0f, 0.0f),
-                    INIT_POS_BUTTERFLY = glm::vec3(-4.0f, 0.0f, 0.0f);
+                    INIT_POS_BUTTERFLY = glm::vec3(-4.0f, 0.0f, 0.0f),
+                    INIT_POS_DOUGHNUT = glm::vec3(0.0f, 0.0f, 0.0f);
 
 constexpr float ROT_INCREMENT = 1.0f; // rotational constant
 
@@ -71,13 +74,6 @@ VIEWPORT_Y = 0,
 VIEWPORT_WIDTH = WINDOW_WIDTH,
 VIEWPORT_HEIGHT = WINDOW_HEIGHT;
 
-
-// Our object's fill colour
-constexpr float TRIANGLE_RED = 1.0,
-TRIANGLE_BLUE = 0.4f,
-TRIANGLE_GREEN = 0.4f,
-TRIANGLE_OPACITY = 1.0f;
-
 AppStatus g_app_status = RUNNING;
 SDL_Window* g_display_window;
 
@@ -86,12 +82,12 @@ ShaderProgram g_shader_program;
 glm::mat4 g_view_matrix,   
 g_black_cat_matrix,
 g_butterfly_matrix,
+g_doughnut_matrix,
 g_model_matrix,
 g_projection_matrix;  
 
 constexpr float MILLISECONDS_IN_SECOND = 1000.0f;
-glm::vec3 g_position_black_cat = glm::vec3(0.0f, 0.0f, 0.0f); // what is added for their positions
-glm::vec3 g_position_butterfly = glm::vec3(0.0f, 0.0f, 0.0f);
+
 float g_previous_ticks;
 float g_radius = 2;
 float g_frames = 0.0f;
@@ -106,25 +102,31 @@ glm::vec3 g_butterfly_position = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 g_butterfly_movement = glm::vec3(0.0f, 0.0f, 0.0f);
 float g_butterfly_speed = 5.0f;  // move 1 unit per second
 
+glm::vec3 g_doughnut_position = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 g_doughnut_movement = glm::vec3(1.0f, 0.0f, 0.0f); // when game starts, go right, change later
+float g_doughnut_speed = 3.0f;  // move 1 unit per second
+
 
 // what is added for their rotations
 glm::vec3 g_rotation_black_cat   = glm::vec3(0.0f, 0.0f, 0.0f),
-          g_rotation_butterfly = glm::vec3(0.0f, 0.0f, 0.0f);
+          g_rotation_butterfly = glm::vec3(0.0f, 0.0f, 0.0f),
+          g_rotation_doughnut = glm::vec3(0.0f, 0.0f, 0.0f);
 
-glm::vec3 g_scale_butterfly = glm::vec3(0.0f, 0.0f, 0.0f); // to be added to butterfly scale vector so that it pulses
+// glm::vec3 g_scale_butterfly = glm::vec3(0.0f, 0.0f, 0.0f); // to be added to butterfly scale vector so that it pulses
 
-constexpr float BASE_SCALE = 1.0f,      // The unscaled size of your object
-MAX_AMPLITUDE = 0.4f,  // The most our triangle will be scaled up/down
-PULSE_SPEED = 0.5f;    // How fast you want your triangle to "beat"
+//constexpr float BASE_SCALE = 1.0f,      // The unscaled size of your object
+//MAX_AMPLITUDE = 0.4f,  // The most our triangle will be scaled up/down
+//PULSE_SPEED = 0.5f;    // How fast you want your triangle to "beat"
 
-constexpr float GROWTH_FACTOR = 1.1f; // not sure if i need these yet
-constexpr float SHRINK_FACTOR = 0.9f;
-constexpr int   MAX_FRAME = 40;
+//constexpr float GROWTH_FACTOR = 1.1f; // not sure if i need these yet
+//constexpr float SHRINK_FACTOR = 0.9f;
+//constexpr int   MAX_FRAME = 40;
 
 
 // texture ids
 GLuint g_black_cat_texture_id,
-       g_butterfly_texture_id;
+       g_butterfly_texture_id,
+       g_doughnut_texture_id;
 
 GLuint load_texture(const char* filepath)
 {
@@ -190,8 +192,9 @@ void initialise()
 
     g_black_cat_matrix       = glm::mat4(1.0f);
     g_butterfly_matrix     = glm::mat4(1.0f);
+    g_doughnut_matrix = glm::mat4(1.0f);
     g_view_matrix       = glm::mat4(1.0f);
-    g_projection_matrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f);
+    g_projection_matrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f); // boundaries
 
     g_shader_program.set_projection_matrix(g_projection_matrix);
     g_shader_program.set_view_matrix(g_view_matrix);
@@ -202,6 +205,7 @@ void initialise()
 
     g_black_cat_texture_id   = load_texture(BLACK_CAT_SPRITE_FILEPATH);
     g_butterfly_texture_id = load_texture(BUTTERFLY_SPRITE_FILEPATH);
+    g_doughnut_texture_id = load_texture(DOUGHNUT_SPRITE_FILEPATH);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -213,6 +217,7 @@ void process_input()
     // VERY IMPORTANT: If nothing is pressed, we don't want to go anywhere
     g_black_cat_movement = glm::vec3(0.0f);
     g_butterfly_movement = glm::vec3(0.0f);
+    //g_doughnut_movement = glm::vec3(0.0f);
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -263,6 +268,9 @@ void process_input()
     //if (key_state[SDL_SCANCODE_D]) { g_butterfly_movement.x = 1.0f; }  // Move right
     if (key_state[SDL_SCANCODE_W]) { g_butterfly_movement.y = 1.0f; }  // Move up
     if (key_state[SDL_SCANCODE_S]) { g_butterfly_movement.y = -1.0f; }  // Move down
+
+    // doughnut movement 
+    // figure this out....
     
     // This makes sure that the player can't "cheat" their way into moving
     // faster
@@ -274,6 +282,13 @@ void process_input()
     }
 }
 
+
+bool check_collision(glm::vec3 pos1, glm::vec3 scale1, glm::vec3 pos2, glm::vec3 scale2) {
+    float x_distance = fabs(pos1.x - pos2.x) - ((scale1.x + scale2.x) / 2.0f);
+    float y_distance = fabs(pos1.y - pos2.y) - ((scale1.y + scale2.y) / 2.0f);
+    return (x_distance < -0.5f && y_distance < -0.5f); // returns true if there is a collision
+}
+
 void update()
 {
     /* DELTA TIME */
@@ -281,32 +296,61 @@ void update()
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
 
-    /* GAME LOGIC */
+    // screen boundaries (from projection_matrix)
+    const float LEFT_BOUND = -5.0f;
+    const float RIGHT_BOUND = 5.0f;
+    const float BOTTOM_BOUND = -3.75f;
+    const float TOP_BOUND = 3.75f;
+
+    // movement
     g_black_cat_position += g_black_cat_movement * g_black_cat_speed * delta_time;
     g_butterfly_position += g_butterfly_movement * g_butterfly_speed * delta_time;
+    g_doughnut_position += g_doughnut_movement * g_doughnut_speed * delta_time;
     
+    // if the new position is too high or too low, don't let them move past bound
+    if (g_black_cat_position.y + INIT_POS_BLACK_CAT.y < BOTTOM_BOUND) g_black_cat_position.y = BOTTOM_BOUND;
+    if (g_black_cat_position.y + INIT_POS_BLACK_CAT.y > TOP_BOUND) g_black_cat_position.y = TOP_BOUND;
+
+    if (g_butterfly_position.y + INIT_POS_BUTTERFLY.y < BOTTOM_BOUND) g_butterfly_position.y = BOTTOM_BOUND;
+    if (g_butterfly_position.y + INIT_POS_BUTTERFLY.y > TOP_BOUND) g_butterfly_position.y = TOP_BOUND;
+
+    // collision checking
+    // if the doughnut hits black_cat, it translates left, if it hits butterfly, it translates right
     
+    // collision detection between doughnut and cat
+    if (check_collision(
+        INIT_POS_DOUGHNUT + g_doughnut_position, INIT_SCALE_DOUGHNUT,
+        INIT_POS_BLACK_CAT + g_black_cat_position, INIT_SCALE_BLACK_CAT
+    )) {
+        std::cout << "collision with cat!\n";
+        g_doughnut_movement.x *= -1.0f; // Reverse direction
+    }
 
-    float x_distance = fabs(g_black_cat_position.x + INIT_POS_BLACK_CAT.x - INIT_POS_BUTTERFLY.x) -
-        ((INIT_SCALE_BUTTERFLY.x + INIT_SCALE_BLACK_CAT.x) / 2.0f);
-
-    float y_distance = fabs(g_black_cat_position.y + INIT_POS_BLACK_CAT.y - INIT_POS_BUTTERFLY.y) -
-        ((INIT_SCALE_BUTTERFLY.y + INIT_SCALE_BLACK_CAT.y) / 2.0f);
-
-    if (x_distance < 0.0f && y_distance < 0.0f)
-    {
-        std::cout << std::time(nullptr) << ": Collision.\n";
-        
+    // collision detection between doughnut and butterfly
+    if (check_collision(
+        INIT_POS_DOUGHNUT + g_doughnut_position, INIT_SCALE_DOUGHNUT,
+        INIT_POS_BUTTERFLY + g_butterfly_position, INIT_SCALE_BUTTERFLY
+    )) {
+        std::cout << "collision with butterfly!\n";
+        g_doughnut_movement.x *= -1.0f; // Reverse direction
     }
 
     /* TRANSFORMATIONS */
+    // black_cat transformations
     g_black_cat_matrix = glm::mat4(1.0f);
     g_black_cat_matrix = glm::translate(g_black_cat_matrix, INIT_POS_BLACK_CAT + g_black_cat_position);
     g_black_cat_matrix = glm::scale(g_black_cat_matrix, INIT_SCALE);
 
+
+    // butterfly transformations
     g_butterfly_matrix = glm::mat4(1.0f);
     g_butterfly_matrix = glm::translate(g_butterfly_matrix, INIT_POS_BUTTERFLY + g_butterfly_position);
     g_butterfly_matrix = glm::scale(g_butterfly_matrix, INIT_SCALE_BUTTERFLY);
+
+    // doughnut transformations
+    g_doughnut_matrix = glm::mat4(1.0f);
+    g_doughnut_matrix = glm::translate(g_doughnut_matrix, INIT_POS_DOUGHNUT + g_doughnut_position);
+    g_doughnut_matrix = glm::scale(g_doughnut_matrix, INIT_SCALE_DOUGHNUT);
 }
 
 void draw_object(glm::mat4 &object_g_model_matrix, GLuint &object_texture_id)
@@ -346,6 +390,7 @@ void render()
     // Bind texture
     draw_object(g_black_cat_matrix, g_black_cat_texture_id);
     draw_object(g_butterfly_matrix, g_butterfly_texture_id);
+    draw_object(g_doughnut_matrix, g_doughnut_texture_id);
     
     // We disable two attribute arrays now
     glDisableVertexAttribArray(g_shader_program.get_position_attribute());
