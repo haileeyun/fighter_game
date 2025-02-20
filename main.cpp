@@ -287,6 +287,20 @@ bool check_collision(glm::vec3 pos1, glm::vec3 scale1, glm::vec3 pos2, glm::vec3
     float x_distance = fabs(pos1.x - pos2.x) - ((scale1.x + scale2.x) / 2.0f);
     float y_distance = fabs(pos1.y - pos2.y) - ((scale1.y + scale2.y) / 2.0f);
     return (x_distance < -0.5f && y_distance < -0.5f); // returns true if there is a collision
+    // note: changed distance to -0.5 because with 0, it was "colliding" with some extra space
+}
+
+float calculate_y_direction(glm::vec3 doughnut_pos, glm::vec3 other_pos) {
+    // if doughnut is above the "paddle", move upwards
+    if (doughnut_pos.y > other_pos.y) {
+        return 1.0f; // move up
+    }
+    // if doughnut is below the "paddle", move downwards
+    else if (doughnut_pos.y < other_pos.y) {
+        return -1.0f; // move down
+    }
+    // ff they are at the same height, no change in angle
+    return 0.0f;
 }
 
 void update()
@@ -307,12 +321,16 @@ void update()
     g_butterfly_position += g_butterfly_movement * g_butterfly_speed * delta_time;
     g_doughnut_position += g_doughnut_movement * g_doughnut_speed * delta_time;
     
-    // if the new position is too high or too low, don't let them move past bound
+    // bound checking
     if (g_black_cat_position.y + INIT_POS_BLACK_CAT.y < BOTTOM_BOUND) g_black_cat_position.y = BOTTOM_BOUND;
     if (g_black_cat_position.y + INIT_POS_BLACK_CAT.y > TOP_BOUND) g_black_cat_position.y = TOP_BOUND;
 
     if (g_butterfly_position.y + INIT_POS_BUTTERFLY.y < BOTTOM_BOUND) g_butterfly_position.y = BOTTOM_BOUND;
     if (g_butterfly_position.y + INIT_POS_BUTTERFLY.y > TOP_BOUND) g_butterfly_position.y = TOP_BOUND;
+
+    if (g_doughnut_position.y + INIT_POS_DOUGHNUT.y > TOP_BOUND || g_doughnut_position.y + INIT_POS_DOUGHNUT.y < BOTTOM_BOUND) {
+        g_doughnut_movement.y *= -1.0f; // reverse y-direction
+    }
 
     // collision checking
     // if the doughnut hits black_cat, it translates left, if it hits butterfly, it translates right
@@ -322,8 +340,11 @@ void update()
         INIT_POS_DOUGHNUT + g_doughnut_position, INIT_SCALE_DOUGHNUT,
         INIT_POS_BLACK_CAT + g_black_cat_position, INIT_SCALE_BLACK_CAT
     )) {
-        std::cout << "collision with cat!\n";
         g_doughnut_movement.x *= -1.0f; // Reverse direction
+        g_doughnut_movement.y = calculate_y_direction(
+            INIT_POS_DOUGHNUT + g_doughnut_position,
+            INIT_POS_BLACK_CAT + g_black_cat_position
+        ); // Adjust y-direction
     }
 
     // collision detection between doughnut and butterfly
@@ -331,8 +352,11 @@ void update()
         INIT_POS_DOUGHNUT + g_doughnut_position, INIT_SCALE_DOUGHNUT,
         INIT_POS_BUTTERFLY + g_butterfly_position, INIT_SCALE_BUTTERFLY
     )) {
-        std::cout << "collision with butterfly!\n";
         g_doughnut_movement.x *= -1.0f; // Reverse direction
+        g_doughnut_movement.y = calculate_y_direction(
+            INIT_POS_DOUGHNUT + g_doughnut_position,
+            INIT_POS_BUTTERFLY + g_butterfly_position
+        ); // Adjust y-direction
     }
 
     /* TRANSFORMATIONS */
