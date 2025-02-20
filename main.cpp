@@ -53,12 +53,15 @@ constexpr GLint NUMBER_OF_TEXTURES = 1, // to be generated, that is
 constexpr char BLACK_CAT_SPRITE_FILEPATH[]   = "shaders/black_cat.png",
                BUTTERFLY_SPRITE_FILEPATH[] = "shaders/butterfly.png";
 
+constexpr float MINIMUM_COLLISION_DISTANCE = 1.0f;
+
+
 // initial position and scale of sprites
 constexpr glm::vec3 INIT_SCALE      = glm::vec3(2.0f, 2.0f, 0.0f),
                     INIT_SCALE_BLACK_CAT = glm::vec3(2.0f, 2.0f, 0.0f),
-                    INIT_SCALE_BUTTERFLY = glm::vec3(1.0f, 1.0f, 0.0f),
-                    INIT_POS_BLACK_CAT   = glm::vec3(2.0f, 0.0f, 0.0f),
-                    INIT_POS_BUTTERFLY = glm::vec3(-2.0f, 0.0f, 0.0f);
+                    INIT_SCALE_BUTTERFLY = glm::vec3(2.0f, 2.0f, 0.0f),
+                    INIT_POS_BLACK_CAT   = glm::vec3(4.0f, 0.0f, 0.0f),
+                    INIT_POS_BUTTERFLY = glm::vec3(-4.0f, 0.0f, 0.0f);
 
 constexpr float ROT_INCREMENT = 1.0f; // rotational constant
 
@@ -250,14 +253,14 @@ void process_input()
     const Uint8 *key_state = SDL_GetKeyboardState(NULL);
                                                                     
     // Black cat movement (Arrow Keys)
-    if (key_state[SDL_SCANCODE_LEFT]) { g_black_cat_movement.x = -1.0f; }
-    if (key_state[SDL_SCANCODE_RIGHT]) { g_black_cat_movement.x = 1.0f; }
+    //if (key_state[SDL_SCANCODE_LEFT]) { g_black_cat_movement.x = -1.0f; }
+    //if (key_state[SDL_SCANCODE_RIGHT]) { g_black_cat_movement.x = 1.0f; }
     if (key_state[SDL_SCANCODE_UP]) { g_black_cat_movement.y = 1.0f; }
     if (key_state[SDL_SCANCODE_DOWN]) { g_black_cat_movement.y = -1.0f; }
 
     // Butterfly movement (WASD keys)
-    if (key_state[SDL_SCANCODE_A]) { g_butterfly_movement.x = -1.0f; }  // Move left
-    if (key_state[SDL_SCANCODE_D]) { g_butterfly_movement.x = 1.0f; }  // Move right
+    //if (key_state[SDL_SCANCODE_A]) { g_butterfly_movement.x = -1.0f; }  // Move left
+    //if (key_state[SDL_SCANCODE_D]) { g_butterfly_movement.x = 1.0f; }  // Move right
     if (key_state[SDL_SCANCODE_W]) { g_butterfly_movement.y = 1.0f; }  // Move up
     if (key_state[SDL_SCANCODE_S]) { g_butterfly_movement.y = -1.0f; }  // Move down
     
@@ -282,13 +285,27 @@ void update()
     g_black_cat_position += g_black_cat_movement * g_black_cat_speed * delta_time;
     g_butterfly_position += g_butterfly_movement * g_butterfly_speed * delta_time;
     
+    
+
+    float x_distance = fabs(g_black_cat_position.x + INIT_POS_BLACK_CAT.x - INIT_POS_BUTTERFLY.x) -
+        ((INIT_SCALE_BUTTERFLY.x + INIT_SCALE_BLACK_CAT.x) / 2.0f);
+
+    float y_distance = fabs(g_black_cat_position.y + INIT_POS_BLACK_CAT.y - INIT_POS_BUTTERFLY.y) -
+        ((INIT_SCALE_BUTTERFLY.y + INIT_SCALE_BLACK_CAT.y) / 2.0f);
+
+    if (x_distance < 0.0f && y_distance < 0.0f)
+    {
+        std::cout << std::time(nullptr) << ": Collision.\n";
+        
+    }
+
     /* TRANSFORMATIONS */
     g_black_cat_matrix = glm::mat4(1.0f);
-    g_black_cat_matrix = glm::translate(g_black_cat_matrix, g_black_cat_position);
+    g_black_cat_matrix = glm::translate(g_black_cat_matrix, INIT_POS_BLACK_CAT + g_black_cat_position);
     g_black_cat_matrix = glm::scale(g_black_cat_matrix, INIT_SCALE);
 
     g_butterfly_matrix = glm::mat4(1.0f);
-    g_butterfly_matrix = glm::translate(g_butterfly_matrix, g_butterfly_position);
+    g_butterfly_matrix = glm::translate(g_butterfly_matrix, INIT_POS_BUTTERFLY + g_butterfly_position);
     g_butterfly_matrix = glm::scale(g_butterfly_matrix, INIT_SCALE_BUTTERFLY);
 }
 
