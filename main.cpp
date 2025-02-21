@@ -29,6 +29,10 @@
 
 enum AppStatus { RUNNING, TERMINATED };
 enum ScaleDirection { GROWING, SHRINKING };
+enum GameState { PLAYING, PLAYER_1_WINS, PLAYER_2_WINS }; // used to keep track of who wins
+// if one of the players win, the respective png will be rendered
+GameState g_game_state = PLAYING; // default to running
+
 
 
 // Our window dimensions
@@ -52,7 +56,9 @@ constexpr GLint NUMBER_OF_TEXTURES = 1, // to be generated, that is
 
 constexpr char BLACK_CAT_SPRITE_FILEPATH[]   = "shaders/black_cat.png",
                BUTTERFLY_SPRITE_FILEPATH[] = "shaders/butterfly.png",
-               DOUGHNUT_SPRITE_FILEPATH[] = "shaders/doughnut.png";
+               DOUGHNUT_SPRITE_FILEPATH[] = "shaders/doughnut.png",
+               PLAYER_1_WINS_SPRITE_FILEPATH[] = "shaders/player_1_wins.png",
+               PLAYER_2_WINS_SPRITE_FILEPATH[] = "shaders/player_2_wins.png";
 
 constexpr float MINIMUM_COLLISION_DISTANCE = 1.0f;
 
@@ -62,6 +68,8 @@ constexpr glm::vec3 INIT_SCALE      = glm::vec3(2.0f, 2.0f, 0.0f),
                     INIT_SCALE_BLACK_CAT = glm::vec3(2.0f, 2.0f, 0.0f),
                     INIT_SCALE_BUTTERFLY = glm::vec3(2.0f, 2.0f, 0.0f),
                     INIT_SCALE_DOUGHNUT = glm::vec3(1.0f, 1.0f, 0.0f),
+                    INIT_SCALE_PLAYER_1_WINS = glm::vec3(2.0f, 2.0f, 0.0f),
+                    INIT_SCALE_PLAYER_2_WINS = glm::vec3(2.0f, 2.0f, 0.0f),
                     INIT_POS_BLACK_CAT   = glm::vec3(4.0f, 0.0f, 0.0f),
                     INIT_POS_BUTTERFLY = glm::vec3(-4.0f, 0.0f, 0.0f),
                     INIT_POS_DOUGHNUT = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -83,6 +91,8 @@ glm::mat4 g_view_matrix,
 g_black_cat_matrix,
 g_butterfly_matrix,
 g_doughnut_matrix,
+g_player_1_wins_matrix,
+g_player_2_wins_matrix,
 g_model_matrix,
 g_projection_matrix;  
 
@@ -126,7 +136,9 @@ glm::vec3 g_rotation_black_cat   = glm::vec3(0.0f, 0.0f, 0.0f),
 // texture ids
 GLuint g_black_cat_texture_id,
        g_butterfly_texture_id,
-       g_doughnut_texture_id;
+       g_doughnut_texture_id,
+       g_player_1_wins_texture_id,
+       g_player_2_wins_texture_id;
 
 GLuint load_texture(const char* filepath)
 {
@@ -193,6 +205,8 @@ void initialise()
     g_black_cat_matrix       = glm::mat4(1.0f);
     g_butterfly_matrix     = glm::mat4(1.0f);
     g_doughnut_matrix = glm::mat4(1.0f);
+    g_player_1_wins_matrix = glm::mat4(1.0f);
+    g_player_2_wins_matrix = glm::mat4(1.0f);
     g_view_matrix       = glm::mat4(1.0f);
     g_projection_matrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f); // boundaries
 
@@ -206,6 +220,8 @@ void initialise()
     g_black_cat_texture_id   = load_texture(BLACK_CAT_SPRITE_FILEPATH);
     g_butterfly_texture_id = load_texture(BUTTERFLY_SPRITE_FILEPATH);
     g_doughnut_texture_id = load_texture(DOUGHNUT_SPRITE_FILEPATH);
+    g_player_1_wins_texture_id = load_texture(PLAYER_1_WINS_SPRITE_FILEPATH);
+    g_player_2_wins_texture_id = load_texture(PLAYER_2_WINS_SPRITE_FILEPATH);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -238,13 +254,23 @@ void process_input()
                         break;
                     
                     case SDLK_RIGHT:
-                        // Move the player right
-                        //g_black_cat_movement.x = 1.0f;
+                        
                         break;
                     
                     case SDLK_q:
                         // Quit the game with a keystroke
                         g_app_status = TERMINATED;
+                        break;
+
+                    case SDLK_r:
+                        // restart the game
+                        if (g_game_state != PLAYING) {
+                            g_game_state = PLAYING;
+                            g_doughnut_position = glm::vec3(0.0f, 0.0f, 0.0f); // Reset doughnut position
+                            g_doughnut_movement = glm::vec3(1.0f, 0.0f, 0.0f); // Reset doughnut movement
+                            g_black_cat_position = glm::vec3(0.0f, 0.0f, 0.0f);
+                            g_butterfly_position = glm::vec3(0.0f, 0.0f, 0.0f);
+                        }
                         break;
                     
                     default:
@@ -305,10 +331,24 @@ float calculate_y_direction(glm::vec3 doughnut_pos, glm::vec3 other_pos) {
 
 void update()
 {
+    
     /* DELTA TIME */
     float ticks = (float) SDL_GetTicks() / MILLISECONDS_IN_SECOND;
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
+
+    if (g_game_state != PLAYING) {
+        // Reset doughnut position and movement
+        g_doughnut_position = glm::vec3(0.0f, 0.0f, 0.0f);
+        g_doughnut_movement = glm::vec3(1.0f, 0.0f, 0.0f);
+
+        // Reset black cat position
+        g_black_cat_position = glm::vec3(0.0f, 0.0f, 0.0f);
+
+        // Reset butterfly position
+        g_butterfly_position = glm::vec3(0.0f, 0.0f, 0.0f);
+    }
+
 
     // screen boundaries (from projection_matrix)
     const float LEFT_BOUND = -5.0f;
@@ -316,48 +356,63 @@ void update()
     const float BOTTOM_BOUND = -3.75f;
     const float TOP_BOUND = 3.75f;
 
-    // movement
-    g_black_cat_position += g_black_cat_movement * g_black_cat_speed * delta_time;
-    g_butterfly_position += g_butterfly_movement * g_butterfly_speed * delta_time;
-    g_doughnut_position += g_doughnut_movement * g_doughnut_speed * delta_time;
+
+    if (g_game_state == PLAYING) {
+        // movement
+        g_black_cat_position += g_black_cat_movement * g_black_cat_speed * delta_time;
+        g_butterfly_position += g_butterfly_movement * g_butterfly_speed * delta_time;
+        g_doughnut_position += g_doughnut_movement * g_doughnut_speed * delta_time;
+
+        // Check for win condition
+        if (g_doughnut_position.x + INIT_POS_DOUGHNUT.x > RIGHT_BOUND) {
+            g_game_state = PLAYER_1_WINS; // butterfly wins
+        }
+        else if (g_doughnut_position.x + INIT_POS_DOUGHNUT.x < LEFT_BOUND) {
+            g_game_state = PLAYER_2_WINS; // black_cat wins
+        }
+
+        // bound checking
+        if (g_black_cat_position.y + INIT_POS_BLACK_CAT.y < BOTTOM_BOUND) g_black_cat_position.y = BOTTOM_BOUND;
+        if (g_black_cat_position.y + INIT_POS_BLACK_CAT.y > TOP_BOUND) g_black_cat_position.y = TOP_BOUND;
+
+        if (g_butterfly_position.y + INIT_POS_BUTTERFLY.y < BOTTOM_BOUND) g_butterfly_position.y = BOTTOM_BOUND;
+        if (g_butterfly_position.y + INIT_POS_BUTTERFLY.y > TOP_BOUND) g_butterfly_position.y = TOP_BOUND;
+
+        if (g_doughnut_position.y + INIT_POS_DOUGHNUT.y > TOP_BOUND || g_doughnut_position.y + INIT_POS_DOUGHNUT.y < BOTTOM_BOUND) {
+            g_doughnut_movement.y *= -1.0f; // reverse y-direction
+        }
+
+        // BUGS: sometimes the ball kinda slides on the top of the screen
+        // if the ball hits the bottom of the paddle it goes in the wrong direction
+
+        // collision checking
+        // if the doughnut hits black_cat, it translates left, if it hits butterfly, it translates right
+
+        // collision detection between doughnut and cat
+        if (check_collision(
+            INIT_POS_DOUGHNUT + g_doughnut_position, INIT_SCALE_DOUGHNUT,
+            INIT_POS_BLACK_CAT + g_black_cat_position, INIT_SCALE_BLACK_CAT
+        )) {
+            g_doughnut_movement.x *= -1.0f; // Reverse direction
+            g_doughnut_movement.y = calculate_y_direction(
+                INIT_POS_DOUGHNUT + g_doughnut_position,
+                INIT_POS_BLACK_CAT + g_black_cat_position
+            ); // Adjust y-direction
+        }
+
+        // collision detection between doughnut and butterfly
+        if (check_collision(
+            INIT_POS_DOUGHNUT + g_doughnut_position, INIT_SCALE_DOUGHNUT,
+            INIT_POS_BUTTERFLY + g_butterfly_position, INIT_SCALE_BUTTERFLY
+        )) {
+            g_doughnut_movement.x *= -1.0f; // Reverse direction
+            g_doughnut_movement.y = calculate_y_direction(
+                INIT_POS_DOUGHNUT + g_doughnut_position,
+                INIT_POS_BUTTERFLY + g_butterfly_position
+            ); // Adjust y-direction
+        }
+    }
     
-    // bound checking
-    if (g_black_cat_position.y + INIT_POS_BLACK_CAT.y < BOTTOM_BOUND) g_black_cat_position.y = BOTTOM_BOUND;
-    if (g_black_cat_position.y + INIT_POS_BLACK_CAT.y > TOP_BOUND) g_black_cat_position.y = TOP_BOUND;
-
-    if (g_butterfly_position.y + INIT_POS_BUTTERFLY.y < BOTTOM_BOUND) g_butterfly_position.y = BOTTOM_BOUND;
-    if (g_butterfly_position.y + INIT_POS_BUTTERFLY.y > TOP_BOUND) g_butterfly_position.y = TOP_BOUND;
-
-    if (g_doughnut_position.y + INIT_POS_DOUGHNUT.y > TOP_BOUND || g_doughnut_position.y + INIT_POS_DOUGHNUT.y < BOTTOM_BOUND) {
-        g_doughnut_movement.y *= -1.0f; // reverse y-direction
-    }
-
-    // collision checking
-    // if the doughnut hits black_cat, it translates left, if it hits butterfly, it translates right
-    
-    // collision detection between doughnut and cat
-    if (check_collision(
-        INIT_POS_DOUGHNUT + g_doughnut_position, INIT_SCALE_DOUGHNUT,
-        INIT_POS_BLACK_CAT + g_black_cat_position, INIT_SCALE_BLACK_CAT
-    )) {
-        g_doughnut_movement.x *= -1.0f; // Reverse direction
-        g_doughnut_movement.y = calculate_y_direction(
-            INIT_POS_DOUGHNUT + g_doughnut_position,
-            INIT_POS_BLACK_CAT + g_black_cat_position
-        ); // Adjust y-direction
-    }
-
-    // collision detection between doughnut and butterfly
-    if (check_collision(
-        INIT_POS_DOUGHNUT + g_doughnut_position, INIT_SCALE_DOUGHNUT,
-        INIT_POS_BUTTERFLY + g_butterfly_position, INIT_SCALE_BUTTERFLY
-    )) {
-        g_doughnut_movement.x *= -1.0f; // Reverse direction
-        g_doughnut_movement.y = calculate_y_direction(
-            INIT_POS_DOUGHNUT + g_doughnut_position,
-            INIT_POS_BUTTERFLY + g_butterfly_position
-        ); // Adjust y-direction
-    }
 
     /* TRANSFORMATIONS */
     // black_cat transformations
@@ -411,10 +466,24 @@ void render()
                           false, 0, texture_coordinates);
     glEnableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
     
-    // Bind texture
-    draw_object(g_black_cat_matrix, g_black_cat_texture_id);
-    draw_object(g_butterfly_matrix, g_butterfly_texture_id);
-    draw_object(g_doughnut_matrix, g_doughnut_texture_id);
+
+    if (g_game_state == PLAYING) {
+        // Bind texture
+        draw_object(g_black_cat_matrix, g_black_cat_texture_id);
+        draw_object(g_butterfly_matrix, g_butterfly_texture_id);
+        draw_object(g_doughnut_matrix, g_doughnut_texture_id);
+    }
+    else {
+        glm::mat4 win_message_matrix = glm::mat4(1.0f);
+        win_message_matrix = glm::translate(win_message_matrix, glm::vec3(0.0f, 0.0f, 0.0f)); // Center the message
+        win_message_matrix = glm::scale(win_message_matrix, glm::vec3(4.0f, 2.0f, 0.0f)); // Scale the message
+        if (g_game_state == PLAYER_1_WINS) {
+            draw_object(win_message_matrix, g_player_1_wins_texture_id);
+        }
+        else if (g_game_state == PLAYER_2_WINS) {
+            draw_object(win_message_matrix, g_player_2_wins_texture_id);
+        }
+    }
     
     // We disable two attribute arrays now
     glDisableVertexAttribArray(g_shader_program.get_position_attribute());
