@@ -106,7 +106,7 @@ int g_frame_counter = 0;
 
 glm::vec3 g_black_cat_position = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 g_black_cat_movement = glm::vec3(0.0f, 0.0f, 0.0f);                                                           
-float g_black_cat_speed = 5.0f;  // move 1 unit per second
+float g_black_cat_speed = 10.0f;  // move 1 unit per second
 
 glm::vec3 g_butterfly_position = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 g_butterfly_movement = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -116,6 +116,8 @@ glm::vec3 g_doughnut_position = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 g_doughnut_movement = glm::vec3(1.0f, 0.0f, 0.0f); // when game starts, go right, change later
 float g_doughnut_speed = 3.0f;  // move 1 unit per second
 
+bool g_single_player_mode = false; // Default to two-player mode
+
 
 // what is added for their rotations
 glm::vec3 g_rotation_black_cat   = glm::vec3(0.0f, 0.0f, 0.0f),
@@ -123,15 +125,6 @@ glm::vec3 g_rotation_black_cat   = glm::vec3(0.0f, 0.0f, 0.0f),
           g_rotation_doughnut = glm::vec3(0.0f, 0.0f, 0.0f);
 
 // glm::vec3 g_scale_butterfly = glm::vec3(0.0f, 0.0f, 0.0f); // to be added to butterfly scale vector so that it pulses
-
-//constexpr float BASE_SCALE = 1.0f,      // The unscaled size of your object
-//MAX_AMPLITUDE = 0.4f,  // The most our triangle will be scaled up/down
-//PULSE_SPEED = 0.5f;    // How fast you want your triangle to "beat"
-
-//constexpr float GROWTH_FACTOR = 1.1f; // not sure if i need these yet
-//constexpr float SHRINK_FACTOR = 0.9f;
-//constexpr int   MAX_FRAME = 40;
-
 
 // texture ids
 GLuint g_black_cat_texture_id,
@@ -232,7 +225,10 @@ void process_input()
 {
     // VERY IMPORTANT: If nothing is pressed, we don't want to go anywhere
     g_black_cat_movement = glm::vec3(0.0f);
-    g_butterfly_movement = glm::vec3(0.0f);
+    if (!g_single_player_mode) { // if it's single player mode, it will just continue to move in whatever direction
+        g_butterfly_movement = glm::vec3(0.0f);
+
+    }
     //g_doughnut_movement = glm::vec3(0.0f);
 
     SDL_Event event;
@@ -262,6 +258,18 @@ void process_input()
                         g_app_status = TERMINATED;
                         break;
 
+                    case SDLK_t: 
+                        // single-player mode
+                        g_single_player_mode = !g_single_player_mode; // switch mode
+                        if (g_single_player_mode) {
+                            g_butterfly_movement = glm::vec3(0.0f, 1.0f, 0.0f); // Start moving up
+                        }
+                        else {
+                            g_butterfly_movement = glm::vec3(0.0f);
+                        }
+                        break;
+
+
                     case SDLK_r:
                         // restart the game
                         if (g_game_state != PLAYING) {
@@ -283,29 +291,28 @@ void process_input()
        
     const Uint8 *key_state = SDL_GetKeyboardState(NULL);
                                                                     
-    // Black cat movement (Arrow Keys)
-    //if (key_state[SDL_SCANCODE_LEFT]) { g_black_cat_movement.x = -1.0f; }
-    //if (key_state[SDL_SCANCODE_RIGHT]) { g_black_cat_movement.x = 1.0f; }
+    // black_cat movement (arrow Keys)
     if (key_state[SDL_SCANCODE_UP]) { g_black_cat_movement.y = 1.0f; }
     if (key_state[SDL_SCANCODE_DOWN]) { g_black_cat_movement.y = -1.0f; }
 
-    // Butterfly movement (WASD keys)
-    //if (key_state[SDL_SCANCODE_A]) { g_butterfly_movement.x = -1.0f; }  // Move left
-    //if (key_state[SDL_SCANCODE_D]) { g_butterfly_movement.x = 1.0f; }  // Move right
-    if (key_state[SDL_SCANCODE_W]) { g_butterfly_movement.y = 1.0f; }  // Move up
-    if (key_state[SDL_SCANCODE_S]) { g_butterfly_movement.y = -1.0f; }  // Move down
+    // butterfly movement (WASD keys)
+    if (!g_single_player_mode) { // only allow player 1 to move if not in single player mode
+        if (key_state[SDL_SCANCODE_W]) { g_butterfly_movement.y = 1.0f; }  // Move up
+        if (key_state[SDL_SCANCODE_S]) { g_butterfly_movement.y = -1.0f; }  // Move down
+    }
 
-    // doughnut movement 
-    // figure this out....
+
     
-    // This makes sure that the player can't "cheat" their way into moving
-    // faster
+    // This makes sure that the player can't "cheat" their way into moving faster
     if (glm::length(g_black_cat_movement) > 1.0f) {
         g_black_cat_movement = glm::normalize(g_black_cat_movement);
     }
     if (glm::length(g_butterfly_movement) > 1.0f) {
         g_butterfly_movement = glm::normalize(g_butterfly_movement);
     }
+    //if (glm::length(g_doughnut_movement) > 1.0f) {
+     //   g_doughnut_movement = glm::normalize(g_doughnut_movement);
+    //}
 }
 
 
@@ -363,6 +370,16 @@ void update()
         g_butterfly_position += g_butterfly_movement * g_butterfly_speed * delta_time;
         g_doughnut_position += g_doughnut_movement * g_doughnut_speed * delta_time;
 
+        // if in single-player mode, the butterfly will simply move up and down
+        if (g_single_player_mode) {
+            if (g_butterfly_position.y + INIT_POS_BUTTERFLY.y > TOP_BOUND) {
+                g_butterfly_movement.y = -1.0f; // move down
+            }
+            else if (g_butterfly_position.y + INIT_POS_BUTTERFLY.y < BOTTOM_BOUND) {
+                g_butterfly_movement.y = 1.0f; // move up
+            }
+        }
+
         // Check for win condition
         if (g_doughnut_position.x + INIT_POS_DOUGHNUT.x > RIGHT_BOUND) {
             g_game_state = PLAYER_1_WINS; // butterfly wins
@@ -384,6 +401,11 @@ void update()
 
         // BUGS: sometimes the ball kinda slides on the top of the screen
         // if the ball hits the bottom of the paddle it goes in the wrong direction
+
+        // TODO: change butterfly to orange cat
+        // make doughnut spin as it flys
+        // add more balls
+        
 
         // collision checking
         // if the doughnut hits black_cat, it translates left, if it hits butterfly, it translates right
