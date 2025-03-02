@@ -59,7 +59,7 @@ constexpr char PLAYER_2_SPRITE_FILEPATH[]   = "shaders/pigeon2.png",
                BALL_SPRITE_FILEPATH[] = "shaders/pizza.png",
                PLAYER_1_WINS_SPRITE_FILEPATH[] = "shaders/player_1_wins.png",
                PLAYER_2_WINS_SPRITE_FILEPATH[] = "shaders/player_2_wins.png",
-               BACKGROUND_SPRITE_FILEPATH[] = "shaders/washington_square_park.png";
+               BACKGROUND_SPRITE_FILEPATH[] = "shaders/dibner.jpeg";
 
 constexpr float MINIMUM_COLLISION_DISTANCE = 1.0f;
 
@@ -179,7 +179,7 @@ void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO);  // initialize video
 
-    g_display_window = SDL_CreateWindow("pong_clone",
+    g_display_window = SDL_CreateWindow("pigeon_pong",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL);
