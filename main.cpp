@@ -1,7 +1,7 @@
 /**
 * Author: Hailee Yun
-* Assignment: Pong Clone
-* Date due: 2025-3-01, 11:59pm
+* Assignment: Lunar Lander
+* Date due: 2025-3-14, 11:59pm
 * I pledge that I have completed this assignment without
 * collaborating with anyone else, in conformance with the
 * NYU School of Engineering Policies and Procedures on
@@ -30,7 +30,6 @@
 enum AppStatus { RUNNING, TERMINATED };
 enum ScaleDirection { GROWING, SHRINKING };
 enum GameState { PLAYING, PLAYER_1_WINS, PLAYER_2_WINS }; // used to keep track of who wins
-// if one of the players win, the respective png will be rendered
 GameState g_game_state = PLAYING; // default to running
 
 
@@ -54,26 +53,15 @@ constexpr GLint NUMBER_OF_TEXTURES = 1, // to be generated, that is
                 LEVEL_OF_DETAIL    = 0, // mipmap reduction image level
                 TEXTURE_BORDER     = 0; // this value MUST be zero
 
-constexpr char PLAYER_2_SPRITE_FILEPATH[]   = "shaders/pigeon2.png",
-               PLAYER_1_SPRITE_FILEPATH[] = "shaders/pigeon1.png",
-               BALL_SPRITE_FILEPATH[] = "shaders/pizza.png",
-               PLAYER_1_WINS_SPRITE_FILEPATH[] = "shaders/player_1_wins.png",
-               PLAYER_2_WINS_SPRITE_FILEPATH[] = "shaders/player_2_wins.png",
-               BACKGROUND_SPRITE_FILEPATH[] = "shaders/dibner.jpeg";
+constexpr char ROCKET_SPRITE_FILEPATH[]   = "shaders/rocket.png";
 
 constexpr float MINIMUM_COLLISION_DISTANCE = 1.0f;
 
 
 // initial position and scale of sprites
 constexpr glm::vec3 INIT_SCALE      = glm::vec3(2.0f, 2.0f, 0.0f),
-                    INIT_SCALE_PLAYER_2 = glm::vec3(1.2f, 2.0f, 0.0f),
-                    INIT_SCALE_PLAYER_1 = glm::vec3(1.2f, 2.0f, 0.0f),
-                    INIT_SCALE_BALL = glm::vec3(1.0f, 1.0f, 0.0f),
-                    INIT_SCALE_PLAYER_1_WINS = glm::vec3(2.0f, 2.0f, 0.0f),
-                    INIT_SCALE_PLAYER_2_WINS = glm::vec3(2.0f, 2.0f, 0.0f),
-                    INIT_POS_PLAYER_2   = glm::vec3(4.0f, 0.0f, 0.0f),
-                    INIT_POS_PLAYER_1 = glm::vec3(-4.0f, 0.0f, 0.0f),
-                    INIT_POS_BALL = glm::vec3(0.0f, 0.0f, 0.0f);
+                    INIT_SCALE_ROCKET = glm::vec3(1.0f, 1.0f, 0.0f),
+                    INIT_POS_ROCKET   = glm::vec3(0.0f, 0.0f, 0.0f);
 
 constexpr float ROT_INCREMENT = 40.0f; // rotational constant
 
@@ -89,12 +77,7 @@ SDL_Window* g_display_window;
 ShaderProgram g_shader_program;
 
 glm::mat4 g_view_matrix,   
-g_player_2_matrix,
-g_player_1_matrix,
-g_ball_matrix,
-g_player_1_wins_matrix,
-g_player_2_wins_matrix,
-g_background_matrix,
+g_rocket_matrix,
 g_model_matrix,
 g_projection_matrix;  
 
@@ -106,44 +89,12 @@ float g_frames = 0.0f;
 
 int g_frame_counter = 0;
 
-glm::vec3 g_player_2_position = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 g_player_2_movement = glm::vec3(0.0f, 0.0f, 0.0f);                                                           
-float g_player_2_speed = 5.0f;  
-
-glm::vec3 g_player_1_position = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 g_player_1_movement = glm::vec3(0.0f, 0.0f, 0.0f);
-float g_player_1_speed = 5.0f;  
-
-//glm::vec3 g_ball_position = glm::vec3(0.0f, 0.0f, 0.0f);
-//glm::vec3 g_ball_movement = glm::vec3(1.0f, 0.0f, 0.0f); // when game starts, go right, change later
-float g_ball_speed = 3.0f;  
-
-bool g_single_player_mode = false; // Default to two-player mode
-
-// multi-ball functionality
-int g_num_balls = 1;
-constexpr int MAX_BALLS = 3; // max numebr of balls
-glm::vec3 g_ball_positions[MAX_BALLS]; // position vector of the balls
-glm::vec3 g_ball_movements[MAX_BALLS]; // movement vector of the balls
-bool g_ball_active[MAX_BALLS] = { false }; // track which balls are active
-float g_ball_rotation_angles[MAX_BALLS] = { 0.0f }; // rotation angles for each ball
-
-
-
-
-// what is added for their rotations
-glm::vec3 g_rotation_player_2 = glm::vec3(0.0f, 0.0f, 0.0f),
-g_rotation_player_1 = glm::vec3(0.0f, 0.0f, 0.0f);
-
-// glm::vec3 g_scale_player_1 = glm::vec3(0.0f, 0.0f, 0.0f); // to be added to player_1 scale vector so that it pulses
-
+glm::vec3 g_rocket_position = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 g_rocket_movement = glm::vec3(0.0f, 0.0f, 0.0f);                                                           
+float g_rocket_speed = 5.0f;  
+ 
 // texture ids
-GLuint g_player_2_texture_id,
-       g_player_1_texture_id,
-       g_ball_texture_id,
-       g_player_1_wins_texture_id,
-       g_player_2_wins_texture_id,
-       g_background_texture_id;
+GLuint g_rocket_texture_id;
 
 GLuint load_texture(const char* filepath)
 {
@@ -179,7 +130,7 @@ void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO);  // initialize video
 
-    g_display_window = SDL_CreateWindow("pigeon_pong",
+    g_display_window = SDL_CreateWindow("lunar_lander",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL);
@@ -208,11 +159,7 @@ void initialise()
     // Load up our shaders
     g_shader_program.load(V_SHADER_PATH, F_SHADER_PATH);
 
-    g_player_2_matrix       = glm::mat4(1.0f);
-    g_player_1_matrix     = glm::mat4(1.0f);
-    g_ball_matrix = glm::mat4(1.0f);
-    g_player_1_wins_matrix = glm::mat4(1.0f);
-    g_player_2_wins_matrix = glm::mat4(1.0f);
+    g_rocket_matrix       = glm::mat4(1.0f);
     g_view_matrix       = glm::mat4(1.0f);
     g_projection_matrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f); // boundaries
 
@@ -223,27 +170,8 @@ void initialise()
 
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
 
-    g_player_2_texture_id   = load_texture(PLAYER_2_SPRITE_FILEPATH);
-    g_player_1_texture_id = load_texture(PLAYER_1_SPRITE_FILEPATH);
-    g_ball_texture_id = load_texture(BALL_SPRITE_FILEPATH);
-    g_player_1_wins_texture_id = load_texture(PLAYER_1_WINS_SPRITE_FILEPATH);
-    g_player_2_wins_texture_id = load_texture(PLAYER_2_WINS_SPRITE_FILEPATH);
-    g_background_texture_id = load_texture(BACKGROUND_SPRITE_FILEPATH);
-
-    // Initialize the first ball
-    g_ball_positions[0] = glm::vec3(0.0f, 0.0f, 0.0f); // Start at the center
-    g_ball_movements[0] = glm::vec3(1.0f, 0.0f, 0.0f); // Move right initially
-    g_ball_active[0] = true; // Mark as active
+    g_rocket_texture_id   = load_texture(ROCKET_SPRITE_FILEPATH);
     
-
-    // Mark other balls as inactive
-    for (int i = 1; i < MAX_BALLS; i++) {
-        g_ball_active[i] = false;
-    }
-
-    g_background_matrix = glm::mat4(1.0f);
-    g_background_matrix = glm::scale(g_background_matrix, glm::vec3(10.0f, 7.5f, 1.0f)); // Scale to cover the screen
-
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -252,11 +180,7 @@ void initialise()
 void process_input()
 {
     // VERY IMPORTANT: If nothing is pressed, we don't want to go anywhere
-    g_player_2_movement = glm::vec3(0.0f);
-    if (!g_single_player_mode) { // if it's single player mode, it will just continue to move in whatever direction
-        g_player_1_movement = glm::vec3(0.0f);
-
-    }
+    g_rocket_movement = glm::vec3(0.0f);
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -280,97 +204,14 @@ void process_input()
                         
                         break;
 
-                    case SDLK_1: // set num of balls to 1
-                        g_num_balls = 1;
-                        // Deactivate balls 2 and 3
-                        g_ball_active[1] = false;
-                        g_ball_active[2] = false;
-
-                        g_ball_positions[1] = glm::vec3(0.0f, 0.0f, 0.0f); // Start at the center
-                        g_ball_movements[1] = glm::vec3(-1.0f, 0.0f, 0.0f); // Move left
-                        g_ball_positions[2] = glm::vec3(0.0f, 0.0f, 0.0f); // Start at the center
-                        g_ball_movements[2] = glm::vec3(1.0f, 1.0f, 0.0f); // Move diagonally right and up
-
-                        break;
-
-                    case SDLK_2:
-                        if (g_num_balls == 1) {
-                            // Activate ball 2
-                            g_ball_positions[1] = glm::vec3(0.0f, 0.0f, 0.0f); // Start at the center
-                            g_ball_movements[1] = glm::vec3(-1.0f, 0.0f, 0.0f); // Move left
-                            g_ball_active[1] = true; // Mark as active
-                        }
-                        else if (g_num_balls == 3){
-                            // if there were 3 balls, deactivatee ball 3
-                            g_ball_active[2] = false;
-                            g_ball_positions[2] = glm::vec3(0.0f, 0.0f, 0.0f); // Start at the center
-                            g_ball_movements[2] = glm::vec3(1.0f, 1.0f, 0.0f); // Move diagonally right and up
-                        }
-                        g_num_balls = 2;
-
-                        break;
-
-                    case SDLK_3:
-                        if (g_num_balls < 3) {
-                 
-                            if (g_num_balls == 1) {
-                                // if there was only 1 ball, activate ball 2
-                                g_ball_positions[1] = glm::vec3(0.0f, 0.0f, 0.0f); // Start at the center
-                                g_ball_movements[1] = glm::vec3(-1.0f, 0.0f, 0.0f); // Move left
-                                g_ball_active[1] = true; // Mark as active
-
-                                // Activate ball 3
-                                g_ball_positions[2] = glm::vec3(0.0f, 0.0f, 0.0f); // Start at the center
-                                g_ball_movements[2] = glm::vec3(1.0f, 1.0f, 0.0f); // Move diagonally right and up
-                                g_ball_active[2] = true; // Mark as active
-                            }
-                            else if (g_num_balls == 2) {
-                                // Activate ball 3
-                                g_ball_positions[2] = glm::vec3(0.0f, 0.0f, 0.0f); // Start at the center
-                                g_ball_movements[2] = glm::vec3(1.0f, 1.0f, 0.0f); // Move diagonally right and up
-                                g_ball_active[2] = true; // Mark as active
-                            }
-                            
-                        }
-                        g_num_balls = 3;
-                        break;
+                   
                     
                     case SDLK_q:
                         // Quit the game with a keystroke
                         g_app_status = TERMINATED;
                         break;
 
-                    case SDLK_t: 
-                        // single-player mode
-                        g_single_player_mode = !g_single_player_mode; // switch mode
-                        if (g_single_player_mode) {
-                            g_player_1_movement = glm::vec3(0.0f, 1.0f, 0.0f); // Start moving up
-                        }
-                        else {
-                            g_player_1_movement = glm::vec3(0.0f);
-                        }
-                        break;
 
-
-                    case SDLK_r:
-                        // restart the game
-                        if (g_game_state != PLAYING) {
-                            g_game_state = PLAYING;
-                            //g_ball_position = glm::vec3(0.0f, 0.0f, 0.0f); // Reset ball position
-                            //g_ball_movement = glm::vec3(1.0f, 0.0f, 0.0f); // Reset ball movement
-                            g_player_2_position = glm::vec3(0.0f, 0.0f, 0.0f);
-                            g_player_1_position = glm::vec3(0.0f, 0.0f, 0.0f);
-
-                            // Reset balls
-                            g_num_balls = 1;
-                            g_ball_positions[0] = glm::vec3(0.0f, 0.0f, 0.0f);
-                            g_ball_movements[0] = glm::vec3(1.0f, 0.0f, 0.0f);
-                            g_ball_active[0] = true;
-
-                            g_ball_active[1] = false;
-                            g_ball_active[2] = false;
-                        }
-                        break;
                     
                     default:
                         break;
@@ -382,28 +223,20 @@ void process_input()
        
     const Uint8 *key_state = SDL_GetKeyboardState(NULL);
                                                                     
-    // player_2 movement (arrow Keys)
-    if (key_state[SDL_SCANCODE_UP]) { g_player_2_movement.y = 1.0f; }
-    if (key_state[SDL_SCANCODE_DOWN]) { g_player_2_movement.y = -1.0f; }
-
-    // player_1 movement (WASD keys)
-    if (!g_single_player_mode) { // only allow player 1 to move if not in single player mode
-        if (key_state[SDL_SCANCODE_W]) { g_player_1_movement.y = 1.0f; }  // Move up
-        if (key_state[SDL_SCANCODE_S]) { g_player_1_movement.y = -1.0f; }  // Move down
-    }
+    // rocket movement (arrow Keys)
+    // for now, simple movement, later doing acceleration
+    if (key_state[SDL_SCANCODE_UP]) { g_rocket_movement.y = 1.0f; }
+    if (key_state[SDL_SCANCODE_DOWN]) { g_rocket_movement.y = -1.0f; }
+    if (key_state[SDL_SCANCODE_RIGHT]) { g_rocket_movement.x = 1.0f; }
+    if (key_state[SDL_SCANCODE_LEFT]) { g_rocket_movement.x = -1.0f;  }
 
 
     
     // This makes sure that the player can't "cheat" their way into moving faster
-    if (glm::length(g_player_2_movement) > 1.0f) {
-        g_player_2_movement = glm::normalize(g_player_2_movement);
+    if (glm::length(g_rocket_movement) > 1.0f) {
+        g_rocket_movement = glm::normalize(g_rocket_movement);
     }
-    if (glm::length(g_player_1_movement) > 1.0f) {
-        g_player_1_movement = glm::normalize(g_player_1_movement);
-    }
-    //if (glm::length(g_ball_movement) > 1.0f) {
-     //   g_ball_movement = glm::normalize(g_ball_movement);
-    //}
+
 }
 
 
@@ -434,15 +267,8 @@ void update()
     float ticks = (float) SDL_GetTicks() / MILLISECONDS_IN_SECOND;
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
-
-    if (g_game_state != PLAYING) {
-       
-        // Reset player_2 position
-        g_player_2_position = glm::vec3(0.0f, 0.0f, 0.0f);
-
-        // Reset player_1 position
-        g_player_1_position = glm::vec3(0.0f, 0.0f, 0.0f);
-    }
+    constexpr float FIXED_TIMESTEP = 1.0f / 60.0f;
+    float g_time_accumulator = 0.0f;
 
 
     // screen boundaries (from projection_matrix)
@@ -454,94 +280,24 @@ void update()
 
     if (g_game_state == PLAYING) {
         // movement
-        g_player_2_position += g_player_2_movement * g_player_2_speed * delta_time;
-        g_player_1_position += g_player_1_movement * g_player_1_speed * delta_time;
-        //g_ball_position += g_ball_movement * g_ball_speed * delta_time;
-
-        for (int i = 0; i < MAX_BALLS; i++) {
-            if (g_ball_active[i]) {
-                g_ball_positions[i] += g_ball_movements[i] * g_ball_speed * delta_time; // update ball position
-                g_ball_rotation_angles[i] += ROT_INCREMENT * delta_time; // update ball rotation
+        g_rocket_position += g_rocket_movement * g_rocket_speed * delta_time;
 
 
-
-                // Boundary checking for balls
-                if (g_ball_positions[i].y + INIT_POS_BALL.y > TOP_BOUND || g_ball_positions[i].y + INIT_POS_BALL.y < BOTTOM_BOUND) {
-                    g_ball_movements[i].y *= -1.0f; // Reverse y-direction
-                }
-
-                // Collision detection between ball and player_2
-                if (check_collision(
-                    INIT_POS_BALL + g_ball_positions[i], INIT_SCALE_BALL,
-                    INIT_POS_PLAYER_2 + g_player_2_position, INIT_SCALE_PLAYER_2
-                )) {
-                    g_ball_movements[i].x *= -1.0f; // Reverse direction
-                    g_ball_movements[i].y = calculate_y_direction(
-                        INIT_POS_BALL + g_ball_positions[i],
-                        INIT_POS_PLAYER_2 + g_player_2_position
-                    ); // Adjust y-direction
-                }
-
-                // Collision detection between ball and player_1
-                if (check_collision(
-                    INIT_POS_BALL + g_ball_positions[i], INIT_SCALE_BALL,
-                    INIT_POS_PLAYER_1 + g_player_1_position, INIT_SCALE_PLAYER_1
-                )) {
-                    g_ball_movements[i].x *= -1.0f; // Reverse direction
-                    g_ball_movements[i].y = calculate_y_direction(
-                        INIT_POS_BALL + g_ball_positions[i],
-                        INIT_POS_PLAYER_1 + g_player_1_position
-                    ); // Adjust y-direction
-                }
-
-                // Check for win condition
-                if (g_ball_positions[i].x + INIT_POS_BALL.x > RIGHT_BOUND) {
-                    g_game_state = PLAYER_1_WINS; // player_1 wins
-                }
-                else if (g_ball_positions[i].x + INIT_POS_BALL.x < LEFT_BOUND) {
-                    g_game_state = PLAYER_2_WINS; // player_2 wins
-                }
-
-
-
-            }
-        }
-        
-        // if in single-player mode, the player_1 will simply move up and down
-        if (g_single_player_mode) {
-            if (g_player_1_position.y + INIT_POS_PLAYER_1.y > TOP_BOUND) {
-                g_player_1_movement.y = -1.0f; // move down
-            }
-            else if (g_player_1_position.y + INIT_POS_PLAYER_1.y < BOTTOM_BOUND) {
-                g_player_1_movement.y = 1.0f; // move up
-            }
-        }
-
-     
 
         // bound checking
-        if (g_player_2_position.y + INIT_POS_PLAYER_2.y < BOTTOM_BOUND) g_player_2_position.y = BOTTOM_BOUND;
-        if (g_player_2_position.y + INIT_POS_PLAYER_2.y > TOP_BOUND) g_player_2_position.y = TOP_BOUND;
-
-        if (g_player_1_position.y + INIT_POS_PLAYER_1.y < BOTTOM_BOUND) g_player_1_position.y = BOTTOM_BOUND;
-        if (g_player_1_position.y + INIT_POS_PLAYER_1.y > TOP_BOUND) g_player_1_position.y = TOP_BOUND;
+        if (g_rocket_position.y + INIT_POS_ROCKET.y < BOTTOM_BOUND) g_rocket_position.y = BOTTOM_BOUND;
+        if (g_rocket_position.y + INIT_POS_ROCKET.y > TOP_BOUND) g_rocket_position.y = TOP_BOUND;
+        if (g_rocket_position.x + INIT_POS_ROCKET.x > RIGHT_BOUND) g_rocket_position.x = RIGHT_BOUND;
+        if (g_rocket_position.x + INIT_POS_ROCKET.x < LEFT_BOUND) g_rocket_position.x = LEFT_BOUND;
 
     }
     
 
     /* TRANSFORMATIONS */
-    // player_2 transformations
-    g_player_2_matrix = glm::mat4(1.0f);
-    g_player_2_matrix = glm::translate(g_player_2_matrix, INIT_POS_PLAYER_2 + g_player_2_position);
-    g_player_2_matrix = glm::scale(g_player_2_matrix, INIT_SCALE_PLAYER_2);
-
-
-    // player_1 transformations
-    g_player_1_matrix = glm::mat4(1.0f);
-    g_player_1_matrix = glm::translate(g_player_1_matrix, INIT_POS_PLAYER_1 + g_player_1_position);
-    g_player_1_matrix = glm::scale(g_player_1_matrix, INIT_SCALE_PLAYER_1);
-
-
+    // rocket transformations
+    g_rocket_matrix = glm::mat4(1.0f);
+    g_rocket_matrix = glm::translate(g_rocket_matrix, INIT_POS_ROCKET + g_rocket_position);
+    g_rocket_matrix = glm::scale(g_rocket_matrix, INIT_SCALE_ROCKET);
 
     
 }
@@ -580,35 +336,18 @@ void render()
                           false, 0, texture_coordinates);
     glEnableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
     
-    draw_object(g_background_matrix, g_background_texture_id); // draw first so it appears in the back
+    //draw_object(g_background_matrix, g_background_texture_id); // draw first so it appears in the back
 
     if (g_game_state == PLAYING) {
         // Bind texture
-        draw_object(g_player_2_matrix, g_player_2_texture_id);
-        draw_object(g_player_1_matrix, g_player_1_texture_id);
-
-        // Render all active balls
-        for (int i = 0; i < MAX_BALLS; i++) {
-            if (g_ball_active[i]) {
-                glm::mat4 ball_matrix = glm::mat4(1.0f);
-                ball_matrix = glm::translate(ball_matrix, INIT_POS_BALL + g_ball_positions[i]);
-                ball_matrix = glm::rotate(ball_matrix, glm::radians(g_ball_rotation_angles[i]), glm::vec3(0.0f, 0.0f, 1.0f)); // Apply rotation
-                ball_matrix = glm::scale(ball_matrix, INIT_SCALE_BALL);
-                draw_object(ball_matrix, g_ball_texture_id);
-            }
-        }
+        draw_object(g_rocket_matrix, g_rocket_texture_id);
 
     }
     else {
         glm::mat4 win_message_matrix = glm::mat4(1.0f);
         win_message_matrix = glm::translate(win_message_matrix, glm::vec3(0.0f, 0.0f, 0.0f)); // Center the message
         win_message_matrix = glm::scale(win_message_matrix, glm::vec3(4.0f, 3.0f, 0.0f)); // Scale the message
-        if (g_game_state == PLAYER_1_WINS) {
-            draw_object(win_message_matrix, g_player_1_wins_texture_id);
-        }
-        else if (g_game_state == PLAYER_2_WINS) {
-            draw_object(win_message_matrix, g_player_2_wins_texture_id);
-        }
+       
     }
     
     // We disable two attribute arrays now
