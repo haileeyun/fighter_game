@@ -39,8 +39,8 @@ struct GameState
 };
 
 // ––––– CONSTANTS ––––– //
-const int WINDOW_WIDTH = 640,
-WINDOW_HEIGHT = 480;
+const int WINDOW_WIDTH = 700,
+WINDOW_HEIGHT = 550;
 
 const float BG_RED = 0.1922f,
 BG_BLUE = 0.549f,
@@ -57,7 +57,7 @@ F_SHADER_PATH[] = "shaders/fragment_textured.glsl";
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
 const char SPRITESHEET_FILEPATH[] = "shaders/george_0.png";
-const char PLATFORM_FILEPATH[] = "shaders/platformPack_tile027.png";
+const char PLATFORM_FILEPATH[] = "shaders/cloud.png";
 
 const int NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0;
@@ -107,7 +107,7 @@ GLuint load_texture(const char* filepath)
 void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO);
-    g_display_window = SDL_CreateWindow("Hello, Physics (again)!",
+    g_display_window = SDL_CreateWindow("lunar_lander",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL);
@@ -138,28 +138,34 @@ void initialise()
 
     g_state.platforms = new Entity[PLATFORM_COUNT];
 
+    float cloud_width = 0.4f;
+    float cloud_height = cloud_width / (4167.0f / 2101.0f); // Maintain aspect ratio
+
     g_state.platforms[PLATFORM_COUNT - 1].m_texture_id = platform_texture_id;
-    g_state.platforms[PLATFORM_COUNT - 1].set_position(glm::vec3(-1.5f, -2.35f, 0.0f));
+    g_state.platforms[PLATFORM_COUNT - 1].set_position(glm::vec3(-2.5f, -2.35f, 0.0f));
     g_state.platforms[PLATFORM_COUNT - 1].set_width(0.4f);
+    g_state.platforms[PLATFORM_COUNT - 1].set_height(0.5f);
     g_state.platforms[PLATFORM_COUNT - 1].update(0.0f, NULL, 0);
 
     for (int i = 0; i < PLATFORM_COUNT - 2; i++)
     {
         g_state.platforms[i].m_texture_id = platform_texture_id;
         g_state.platforms[i].set_position(glm::vec3(i - 1.0f, -3.0f, 0.0f));
-        g_state.platforms[i].set_width(0.4f);
+        g_state.platforms[i].set_width(cloud_width);
+        g_state.platforms[i].set_height(0.5f);
         g_state.platforms[i].update(0.0f, NULL, 0);
     }
 
     g_state.platforms[PLATFORM_COUNT - 2].m_texture_id = platform_texture_id;
     g_state.platforms[PLATFORM_COUNT - 2].set_position(glm::vec3(2.5f, -2.5f, 0.0f));
     g_state.platforms[PLATFORM_COUNT - 2].set_width(0.4f);
+    g_state.platforms[PLATFORM_COUNT - 2].set_height(0.5f);
     g_state.platforms[PLATFORM_COUNT - 2].update(0.0f, NULL, 0);
 
     // ––––– PLAYER (GEORGE) ––––– //
     // Existing
     g_state.player = new Entity();
-    g_state.player->set_position(glm::vec3(0.0f));
+    g_state.player->set_position(glm::vec3(0.0f, 2.0f, 0.0f));
     g_state.player->set_movement(glm::vec3(0.0f));
     g_state.player->m_speed = 1.0f;
     g_state.player->set_acceleration(glm::vec3(0.0f, -1.0f, 0.0f)); // setting the gravity
