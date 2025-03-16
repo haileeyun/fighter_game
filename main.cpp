@@ -78,6 +78,8 @@ float g_accumulator = 0.0f;
 bool g_win = false;  // Track if the player wins
 bool g_lose = false; // Track if the player loses
 
+float fuel = 300.0f;
+
 
 
 // ––––– GENERAL FUNCTIONS ––––– //
@@ -110,9 +112,10 @@ GLuint load_texture(const char* filepath)
 }
 
 
-
 // move later lol
 GLuint g_font_texture_id = load_texture("shaders/font.png");
+
+
 
 void initialise()
 {
@@ -235,15 +238,16 @@ void process_input()
                 break;
 
             case SDLK_r:
-                if (g_win || g_lose) {
-                    g_state.player->set_position(glm::vec3(0.0f, 2.0f, 0.0f)); // Reset player position
-                    g_state.player->set_movement(glm::vec3(0.0f));
-                    g_state.player->set_velocity(glm::vec3(0.0f));
-                    g_state.player->set_acceleration(glm::vec3(0.0f, -0.1f, 0.0f)); // Reset gravity
-                    g_win = false;
-                    g_lose = false;
-                    g_game_is_running = true; // Restart the game
-                }
+                
+                g_state.player->set_position(glm::vec3(0.0f, 2.0f, 0.0f)); // Reset player position
+                g_state.player->set_movement(glm::vec3(0.0f));
+                g_state.player->set_velocity(glm::vec3(0.0f));
+                g_state.player->set_acceleration(glm::vec3(0.0f, -0.1f, 0.0f)); // Reset gravity
+                g_win = false;
+                g_lose = false;
+                g_game_is_running = true; // Restart the game
+                fuel = 300.0f;
+                
                 break;
 
             case SDLK_SPACE:
@@ -259,7 +263,7 @@ void process_input()
             break;
         }
     }
-    if (g_win || g_lose) return;
+    if (g_win || g_lose || fuel <= 0.0f) return;
 
     const Uint8* key_state = SDL_GetKeyboardState(NULL);
 
@@ -269,6 +273,7 @@ void process_input()
         g_state.player->set_acceleration(glm::vec3(-1.0f, g_state.player->get_acceleration().y, 0.0f)); // Accelerate left
         g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];
         g_state.player->move_left();
+        fuel -= 1.0f;
     }
     else if (key_state[SDL_SCANCODE_RIGHT])
     {
@@ -276,11 +281,13 @@ void process_input()
         g_state.player->set_acceleration(glm::vec3(1.0f, g_state.player->get_acceleration().y, 0.0f)); // Accelerate right
         g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->RIGHT];
         g_state.player->move_right();
+        fuel -= 1.0f;
     }
     else if (key_state[SDL_SCANCODE_UP])
     {
         g_state.player->set_acceleration(glm::vec3(g_state.player->get_acceleration().x, 1.0f, 0.0f)); // Accelerate upward
         g_state.player->face_up();
+        fuel -= 1.0f;
     }
 
     
@@ -315,6 +322,9 @@ void update()
 
     g_accumulator = delta_time;
 
+    
+
+
     // ––––– WIN/LOSE CONDITIONS ––––– //
     // Check if the player lands on platform 3 (win condition)
     
@@ -324,6 +334,9 @@ void update()
     if (g_state.player->m_collided_bottom) {
         if (g_state.player->get_position().x <= 3.0f && g_state.player->get_position().x >= 2.0f) {
             g_win = true;
+            g_state.player->set_movement(glm::vec3(0.0f));
+            g_state.player->set_velocity(glm::vec3(0.0f)); // Reset velocity
+            return;
         }
     }
     
@@ -347,8 +360,22 @@ void update()
     {
         //g_game_is_running = false; // Stop the game
         g_lose = true; // Set lose flag
+        g_state.player->set_movement(glm::vec3(0.0f));
+        g_state.player->set_velocity(glm::vec3(0.0f)); // Reset velocity
+        return;
     }
 
+    if (fuel <= 0.0f) {
+        g_lose = true; // Set lose flag
+        g_state.player->set_movement(glm::vec3(0.0f));
+        g_state.player->set_velocity(glm::vec3(0.0f)); // Reset velocity
+        return;
+    }
+
+    if (g_win || g_lose) {
+        g_state.player->set_movement(glm::vec3(0.0f));
+        return;
+    }
 
 }
 
@@ -432,19 +459,22 @@ void render()
 
     g_state.player->render(&g_program);
 
-    draw_text(&g_program, g_font_texture_id, "Hello, George!", 0.5f, 0.05f,
-        glm::vec3(-3.5f, 2.0f, 0.0f));
+    //draw_text(&g_program, load_texture("shaders/font.png"), "welcome", 0.5f, 0.05f,glm::vec3(-3.5f, 2.0f, 0.0f));
 
     for (int i = 0; i < PLATFORM_COUNT; i++) g_state.platforms[i].render(&g_program);
 
+
+    // ––––– DISPLAY FUEL ––––– //
+    std::string fuel_text = "Fuel: " + std::to_string((int)fuel);
+    draw_text(&g_program, load_texture("shaders/font.png"), fuel_text, 0.5f, 0.05f, glm::vec3(-4.5f, 3.5f, 0.0f));
     // ––––– DISPLAY WIN/LOSE MESSAGES ––––– //
     if (g_win)
     {
-        draw_text(&g_program, g_font_texture_id, "You Win!", 0.5f, 0.05f, glm::vec3(-1.5f, 0.0f, 0.0f));
+        draw_text(&g_program, load_texture("shaders/font.png"), "You Win!", 0.5f, 0.05f, glm::vec3(-1.5f, 0.0f, 0.0f));
     }
     else if (g_lose)
     {
-        draw_text(&g_program, g_font_texture_id, "You Lose!", 0.5f, 0.05f, glm::vec3(-1.5f, 0.0f, 0.0f));
+        draw_text(&g_program, load_texture("shaders/font.png"), "You Lose!", 0.5f, 0.05f, glm::vec3(-1.5f, 0.0f, 0.0f));
     }
 
     SDL_GL_SwapWindow(g_display_window);
