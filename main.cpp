@@ -234,6 +234,18 @@ void process_input()
                 g_game_is_running = false;
                 break;
 
+            case SDLK_r:
+                if (g_win || g_lose) {
+                    g_state.player->set_position(glm::vec3(0.0f, 2.0f, 0.0f)); // Reset player position
+                    g_state.player->set_movement(glm::vec3(0.0f));
+                    g_state.player->set_velocity(glm::vec3(0.0f));
+                    g_state.player->set_acceleration(glm::vec3(0.0f, -0.1f, 0.0f)); // Reset gravity
+                    g_win = false;
+                    g_lose = false;
+                    g_game_is_running = true; // Restart the game
+                }
+                break;
+
             case SDLK_SPACE:
                 // Jump
                 //if (g_state.player->m_collided_bottom) g_state.player->m_is_jumping = true;
@@ -247,6 +259,7 @@ void process_input()
             break;
         }
     }
+    if (g_win || g_lose) return;
 
     const Uint8* key_state = SDL_GetKeyboardState(NULL);
 
@@ -306,14 +319,15 @@ void update()
     // Check if the player lands on platform 3 (win condition)
     
     //g_state.platforms[PLATFORM_COUNT - 2].set_position(glm::vec3(2.5f, -2.5f, 0.0f));
+
+    // IM SORRY I HAD TO HARDCODE THE WINNING CONDITION BECAUSE I COULDN'T GET CHECK_COLLISION TO WORK :(
     if (g_state.player->m_collided_bottom) {
         if (g_state.player->get_position().x <= 3.0f && g_state.player->get_position().x >= 2.0f) {
-            std::cout << "Collision detected with platform " << std::endl;
             g_win = true;
         }
     }
     
-    for (int i = 0; i < PLATFORM_COUNT; i++) {
+    /*for (int i = 0; i < PLATFORM_COUNT; i++) {
         if (g_state.player->check_collision(&g_state.platforms[i])) {
             std::cout << "Collision detected with platform " << i << std::endl;
             if (i == 2) { // Winning condition
@@ -321,7 +335,7 @@ void update()
             }
         }
     }
-
+    */
         
     
 
