@@ -80,6 +80,9 @@ bool g_lose = false; // Track if the player loses
 
 float fuel = 300.0f;
 
+Entity* g_background_cloud;
+Entity* g_big_cloud;
+Entity* g_right_cloud;
 
 
 // ––––– GENERAL FUNCTIONS ––––– //
@@ -115,7 +118,34 @@ GLuint load_texture(const char* filepath)
 // move later lol
 GLuint g_font_texture_id = load_texture("shaders/font.png");
 
+void render_background() {
+    // Load background textures
+    GLuint cloud_background_texture_id = load_texture("shaders/cloud_background.png");
+    GLuint big_cloud_texture_id = load_texture("shaders/big_cloud.png");
+    GLuint right_cloud_texture_id = load_texture("shaders/right_cloud.png");
 
+    // Create background entities
+    g_background_cloud = new Entity();
+    g_background_cloud->m_texture_id = cloud_background_texture_id;
+    g_background_cloud->set_position(glm::vec3(0.0f, 0.0f, 0.0f));
+    g_background_cloud->set_width(10.0f);
+    g_background_cloud->set_height(7.5f);
+    g_background_cloud->set_entity_type(PLAYER);
+
+    g_big_cloud = new Entity();
+    g_big_cloud->m_texture_id = big_cloud_texture_id;
+    g_big_cloud->set_position(glm::vec3(0.0f, 0.0f, 0.0f));
+    g_big_cloud->set_width(11.0f);
+    g_big_cloud->set_height(7.5f);
+    g_big_cloud->set_entity_type(PLAYER);
+
+    g_right_cloud = new Entity();
+    g_right_cloud->m_texture_id = right_cloud_texture_id;
+    g_right_cloud->set_position(glm::vec3(0.0f, 0.0f, 0.0f));
+    g_right_cloud->set_width(11.0f);
+    g_right_cloud->set_height(7.5f);
+    g_right_cloud->set_entity_type(PLAYER);
+}
 
 void initialise()
 {
@@ -146,7 +176,9 @@ void initialise()
     glUseProgram(g_program.get_program_id());
 
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
-    
+
+
+    render_background();
 
     // ––––– PLATFORMS ––––– //
     GLuint platform_texture_id = load_texture(PLATFORM_FILEPATH);
@@ -163,15 +195,17 @@ void initialise()
     g_state.platforms[PLATFORM_COUNT - 1].set_height(0.5f);
     g_state.platforms[PLATFORM_COUNT - 1].update(0.0f, NULL, 0);
     g_state.platforms[PLATFORM_COUNT - 1].activate();
+    g_state.platforms[PLATFORM_COUNT - 1].set_entity_type(PLATFORM);
 
     for (int i = 0; i < PLATFORM_COUNT - 2; i++)
     {
         g_state.platforms[i].m_texture_id = platform_texture_id;
         g_state.platforms[i].set_position(glm::vec3(i - 1.0f, -3.0f, 0.0f));
-        g_state.platforms[i].set_width(0.5);
+        g_state.platforms[i].set_width(0.5f);
         g_state.platforms[i].set_height(0.5f);
         g_state.platforms[i].update(0.0f, NULL, 0);
         g_state.platforms[i].activate();
+        g_state.platforms[i].set_entity_type(PLATFORM);
     }
 
     g_state.platforms[PLATFORM_COUNT - 2].m_texture_id = platform_texture_id;
@@ -180,6 +214,7 @@ void initialise()
     g_state.platforms[PLATFORM_COUNT - 2].set_height(0.5f);
     g_state.platforms[PLATFORM_COUNT - 2].update(0.0f, NULL, 0);
     g_state.platforms[PLATFORM_COUNT - 2].activate();
+    g_state.platforms[PLATFORM_COUNT - 2].set_entity_type(PLATFORM);
 
     // ––––– PLAYER ––––– //
     // Existing
@@ -189,6 +224,7 @@ void initialise()
     g_state.player->m_speed = 1.0f;
     g_state.player->set_acceleration(glm::vec3(0.0f, -1.0f, 0.0f)); // setting the gravity
     g_state.player->m_texture_id = load_texture(SPRITESHEET_FILEPATH);
+    g_state.player->set_entity_type(PLAYER);
 
     // Walking
     g_state.player->m_walking[g_state.player->LEFT] = new int[4] { 1, 5, 9, 13 };
@@ -456,6 +492,11 @@ void render()
 {
 
     glClear(GL_COLOR_BUFFER_BIT);
+
+    // Render the background layers in order (back to front)
+    g_background_cloud->render(&g_program); // Back layer
+    g_big_cloud->render(&g_program);       // Middle layer
+    g_right_cloud->render(&g_program);     // Front layer
 
     g_state.player->render(&g_program);
 

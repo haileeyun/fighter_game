@@ -167,6 +167,9 @@ void const Entity::check_collision_y(Entity *collidable_entities, int collidable
                 m_collided_top  = true;
             } else if (m_velocity.y < 0) {
                 m_position.y      += y_overlap;
+
+               
+
                 m_velocity.y       = 0;
                 m_collided_bottom  = true;
             }
@@ -209,7 +212,27 @@ void Entity::render(ShaderProgram *program)
         return;
     }
     
-    float vertices[]   = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+    //float vertices[]   = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+
+    float vertices[] = {
+        -0.5f * m_width, -0.5f * m_height,
+         0.5f * m_width, -0.5f * m_height,
+         0.5f * m_width,  0.5f * m_height,
+        -0.5f * m_width, -0.5f * m_height,
+         0.5f * m_width,  0.5f * m_height,
+        -0.5f * m_width,  0.5f * m_height
+    };
+
+    // if its a platform, I'm doing this so the image is bigger than the platform entity
+    // this is so the player kind of "sinks" into the platform
+    if (m_type == PLATFORM) {
+        vertices[0] = -0.5f; vertices[1] = -0.5f;  // Bottom-left
+        vertices[2] = 0.5f; vertices[3] = -0.5f;  // Bottom-right
+        vertices[4] = 0.5f; vertices[5] = 0.5f;  // Top-right
+        vertices[6] = -0.5f; vertices[7] = -0.5f;  // Bottom-left
+        vertices[8] = 0.5f; vertices[9] = 0.5f;  // Top-right
+        vertices[10] = -0.5f; vertices[11] = 0.5f; // Top-left
+    }
     float tex_coords[] = {  0.0,  1.0, 1.0,  1.0, 1.0, 0.0,  0.0,  1.0, 1.0, 0.0,  0.0, 0.0 };
     
     glBindTexture(GL_TEXTURE_2D, m_texture_id);
