@@ -1,5 +1,10 @@
-enum EntityType { PLATFORM, PLAYER, ITEM };
+#ifndef ENTITY_H
+#define ENTITY_H
 
+enum EntityType { PLATFORM, PLAYER, ITEM };
+enum AnimationDirection { LEFT, RIGHT, UP, DOWN };
+
+//old
 class Entity
 {
 private:
@@ -57,6 +62,16 @@ public:
     bool m_collided_left = false;
     bool m_collided_right = false;
 
+    void face_left() { m_animation_indices = m_walking[LEFT]; }
+    void face_right() { m_animation_indices = m_walking[RIGHT]; }
+    void face_up() { m_animation_indices = m_walking[UP]; }
+    void face_down() { m_animation_indices = m_walking[DOWN]; }
+
+    void move_left() { m_movement.x = -1.0f; face_left(); }
+    void move_right() { m_movement.x = 1.0f;  face_right(); }
+    void move_up() { m_movement.y = 1.0f;  face_up(); }
+    void move_down() { m_movement.y = -1.0f; face_down(); }
+
     // ––––– METHODS ––––– //
     Entity();
     ~Entity();
@@ -88,3 +103,4 @@ public:
     void const set_width(float new_width) { m_width = new_width; };
     void const set_height(float new_height) { m_height = new_height; };
 };
+#endif // ENTITY_H

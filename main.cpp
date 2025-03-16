@@ -75,6 +75,11 @@ glm::mat4 g_view_matrix, g_projection_matrix;
 float g_previous_ticks = 0.0f;
 float g_accumulator = 0.0f;
 
+bool g_win = false;  // Track if the player wins
+bool g_lose = false; // Track if the player loses
+
+
+
 // ––––– GENERAL FUNCTIONS ––––– //
 GLuint load_texture(const char* filepath)
 {
@@ -104,8 +109,14 @@ GLuint load_texture(const char* filepath)
     return textureID;
 }
 
+
+
+// move later lol
+GLuint g_font_texture_id = load_texture("shaders/font.png");
+
 void initialise()
 {
+    std::cout << "initalizeee" << std::endl;
     SDL_Init(SDL_INIT_VIDEO);
     g_display_window = SDL_CreateWindow("lunar_lander",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -132,37 +143,42 @@ void initialise()
     glUseProgram(g_program.get_program_id());
 
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
+    
 
     // ––––– PLATFORMS ––––– //
     GLuint platform_texture_id = load_texture(PLATFORM_FILEPATH);
 
     g_state.platforms = new Entity[PLATFORM_COUNT];
 
-    float cloud_width = 0.4f;
-    float cloud_height = cloud_width / (4167.0f / 2101.0f); // Maintain aspect ratio
+
+    // note: might not need this anymore
+    
 
     g_state.platforms[PLATFORM_COUNT - 1].m_texture_id = platform_texture_id;
     g_state.platforms[PLATFORM_COUNT - 1].set_position(glm::vec3(-2.5f, -2.35f, 0.0f));
-    g_state.platforms[PLATFORM_COUNT - 1].set_width(0.4f);
+    g_state.platforms[PLATFORM_COUNT - 1].set_width(0.5f);
     g_state.platforms[PLATFORM_COUNT - 1].set_height(0.5f);
     g_state.platforms[PLATFORM_COUNT - 1].update(0.0f, NULL, 0);
+    g_state.platforms[PLATFORM_COUNT - 1].activate();
 
     for (int i = 0; i < PLATFORM_COUNT - 2; i++)
     {
         g_state.platforms[i].m_texture_id = platform_texture_id;
         g_state.platforms[i].set_position(glm::vec3(i - 1.0f, -3.0f, 0.0f));
-        g_state.platforms[i].set_width(cloud_width);
+        g_state.platforms[i].set_width(0.5);
         g_state.platforms[i].set_height(0.5f);
         g_state.platforms[i].update(0.0f, NULL, 0);
+        g_state.platforms[i].activate();
     }
 
     g_state.platforms[PLATFORM_COUNT - 2].m_texture_id = platform_texture_id;
     g_state.platforms[PLATFORM_COUNT - 2].set_position(glm::vec3(2.5f, -2.5f, 0.0f));
-    g_state.platforms[PLATFORM_COUNT - 2].set_width(0.4f);
+    g_state.platforms[PLATFORM_COUNT - 2].set_width(0.5f);
     g_state.platforms[PLATFORM_COUNT - 2].set_height(0.5f);
     g_state.platforms[PLATFORM_COUNT - 2].update(0.0f, NULL, 0);
+    g_state.platforms[PLATFORM_COUNT - 2].activate();
 
-    // ––––– PLAYER (GEORGE) ––––– //
+    // ––––– PLAYER ––––– //
     // Existing
     g_state.player = new Entity();
     g_state.player->set_position(glm::vec3(0.0f, 2.0f, 0.0f));
@@ -177,7 +193,7 @@ void initialise()
     g_state.player->m_walking[g_state.player->UP] = new int[4] { 2, 6, 10, 14 };
     g_state.player->m_walking[g_state.player->DOWN] = new int[4] { 0, 4, 8, 12 };
 
-    g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];  // start George looking left
+    g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];  // start player looking left
     g_state.player->m_animation_frames = 4;
     g_state.player->m_animation_index = 0;
     g_state.player->m_animation_time = 0.0f;
@@ -188,6 +204,8 @@ void initialise()
 
     // Jumping
     g_state.player->m_jumping_power = 3.0f;
+
+    GLuint g_font_texture_id = load_texture("shaders/font.png");
 
     // ––––– GENERAL ––––– //
     glEnable(GL_BLEND);
@@ -218,7 +236,7 @@ void process_input()
 
             case SDLK_SPACE:
                 // Jump
-                if (g_state.player->m_collided_bottom) g_state.player->m_is_jumping = true;
+                //if (g_state.player->m_collided_bottom) g_state.player->m_is_jumping = true;
                 break;
 
             default:
@@ -237,17 +255,21 @@ void process_input()
         //g_state.player->m_movement.x = -1.0f;
         g_state.player->set_acceleration(glm::vec3(-1.0f, g_state.player->get_acceleration().y, 0.0f)); // Accelerate left
         g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];
+        g_state.player->move_left();
     }
     else if (key_state[SDL_SCANCODE_RIGHT])
     {
         //g_state.player->m_movement.x = 1.0f;
         g_state.player->set_acceleration(glm::vec3(1.0f, g_state.player->get_acceleration().y, 0.0f)); // Accelerate right
         g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->RIGHT];
+        g_state.player->move_right();
     }
     else if (key_state[SDL_SCANCODE_UP])
     {
         g_state.player->set_acceleration(glm::vec3(g_state.player->get_acceleration().x, 1.0f, 0.0f)); // Accelerate upward
+        g_state.player->face_up();
     }
+
     
 
 
@@ -279,15 +301,137 @@ void update()
     }
 
     g_accumulator = delta_time;
+
+    // ––––– WIN/LOSE CONDITIONS ––––– //
+    // Check if the player lands on platform 3 (win condition)
+    
+    //g_state.platforms[PLATFORM_COUNT - 2].set_position(glm::vec3(2.5f, -2.5f, 0.0f));
+    if (g_state.player->m_collided_bottom) {
+        if (g_state.player->get_position().x <= 3.0f && g_state.player->get_position().x >= 2.0f) {
+            std::cout << "Collision detected with platform " << std::endl;
+            g_win = true;
+        }
+    }
+    
+    for (int i = 0; i < PLATFORM_COUNT; i++) {
+        if (g_state.player->check_collision(&g_state.platforms[i])) {
+            std::cout << "Collision detected with platform " << i << std::endl;
+            if (i == 2) { // Winning condition
+                g_win = true;
+            }
+        }
+    }
+
+        
+    
+
+    // Check if the player falls off the screen (lose condition)
+    if (g_state.player->get_position().y < -5.0f || // Fell too low
+        g_state.player->get_position().x < -5.0f || // Fell too left
+        g_state.player->get_position().x > 5.0f ||  // Fell too right
+        g_state.player->get_position().y > 5.0f)    // Fell too high
+    {
+        //g_game_is_running = false; // Stop the game
+        g_lose = true; // Set lose flag
+    }
+
+
 }
+
+
+constexpr int FONTBANK_SIZE = 16;
+
+void draw_text(ShaderProgram* program, GLuint g_font_texture_id, std::string text,
+    float font_size, float spacing, glm::vec3 position)
+{
+    // Scale the size of the fontbank in the UV-plane
+    // We will use this for spacing and positioning
+    float width = 1.0f / FONTBANK_SIZE;
+    float height = 1.0f / FONTBANK_SIZE;
+
+    // Instead of having a single pair of arrays, we'll have a series of pairs—one for
+    // each character. Don't forget to include <vector>!
+    glBindTexture(GL_TEXTURE_2D, g_font_texture_id);
+    std::vector<float> vertices;
+    std::vector<float> texture_coordinates;
+
+    // For every character...
+    for (std::size_t i = 0; i < text.size(); i++) {
+        // 1. Get their index in the spritesheet, as well as their offset (i.e. their
+        //    position relative to the whole sentence)
+        int spritesheet_index = (int)text[i];  // ascii value of character
+        float offset = (font_size + spacing) * i;
+
+        // 2. Using the spritesheet index, we can calculate our U- and V-coordinates
+        float u_coordinate = (float)(spritesheet_index % FONTBANK_SIZE) / FONTBANK_SIZE;
+        float v_coordinate = (float)(spritesheet_index / FONTBANK_SIZE) / FONTBANK_SIZE;
+
+        // 3. Inset the current pair in both vectors
+        vertices.insert(vertices.end(), {
+            offset + (-0.5f * font_size), 0.5f * font_size,
+            offset + (-0.5f * font_size), -0.5f * font_size,
+            offset + (0.5f * font_size), 0.5f * font_size,
+            offset + (0.5f * font_size), -0.5f * font_size,
+            offset + (0.5f * font_size), 0.5f * font_size,
+            offset + (-0.5f * font_size), -0.5f * font_size,
+            });
+
+        texture_coordinates.insert(texture_coordinates.end(), {
+            u_coordinate, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate + width, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            });
+    }
+
+    // 4. And render all of them using the pairs
+    glm::mat4 model_matrix = glm::mat4(1.0f);
+    model_matrix = glm::translate(model_matrix, position);
+
+    program->set_model_matrix(model_matrix);
+    glUseProgram(program->get_program_id());
+    
+
+    glVertexAttribPointer(program->get_position_attribute(), 2, GL_FLOAT, false, 0,
+        vertices.data());
+    glEnableVertexAttribArray(program->get_position_attribute());
+    glVertexAttribPointer(program->get_tex_coordinate_attribute(), 2, GL_FLOAT, false, 0,
+        texture_coordinates.data());
+    glEnableVertexAttribArray(program->get_tex_coordinate_attribute());
+
+    
+
+    glDrawArrays(GL_TRIANGLES, 0, (int)(text.size() * 6));
+
+    glDisableVertexAttribArray(program->get_position_attribute());
+    glDisableVertexAttribArray(program->get_tex_coordinate_attribute());
+}
+
+
 
 void render()
 {
+
     glClear(GL_COLOR_BUFFER_BIT);
 
     g_state.player->render(&g_program);
 
+    draw_text(&g_program, g_font_texture_id, "Hello, George!", 0.5f, 0.05f,
+        glm::vec3(-3.5f, 2.0f, 0.0f));
+
     for (int i = 0; i < PLATFORM_COUNT; i++) g_state.platforms[i].render(&g_program);
+
+    // ––––– DISPLAY WIN/LOSE MESSAGES ––––– //
+    if (g_win)
+    {
+        draw_text(&g_program, g_font_texture_id, "You Win!", 0.5f, 0.05f, glm::vec3(-1.5f, 0.0f, 0.0f));
+    }
+    else if (g_lose)
+    {
+        draw_text(&g_program, g_font_texture_id, "You Lose!", 0.5f, 0.05f, glm::vec3(-1.5f, 0.0f, 0.0f));
+    }
 
     SDL_GL_SwapWindow(g_display_window);
 }
