@@ -36,6 +36,7 @@ struct GameState
 {
     Entity* player;
     Entity* platforms;
+    Entity* evil_platform;
 };
 
 // ––––– CONSTANTS ––––– //
@@ -58,6 +59,7 @@ F_SHADER_PATH[] = "shaders/fragment_textured.glsl";
 const float MILLISECONDS_IN_SECOND = 1000.0;
 const char SPRITESHEET_FILEPATH[] = "shaders/george_0.png";
 const char PLATFORM_FILEPATH[] = "shaders/cloud.png";
+const char EVIL_PLATFORM_FILEPATH[] = "shaders/evil_cloud.png";
 
 const int NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0;
@@ -184,9 +186,6 @@ void initialise()
     GLuint platform_texture_id = load_texture(PLATFORM_FILEPATH);
 
     g_state.platforms = new Entity[PLATFORM_COUNT];
-
-
-    // note: might not need this anymore
     
 
     g_state.platforms[PLATFORM_COUNT - 1].m_texture_id = platform_texture_id;
@@ -215,6 +214,18 @@ void initialise()
     g_state.platforms[PLATFORM_COUNT - 2].update(0.0f, NULL, 0);
     g_state.platforms[PLATFORM_COUNT - 2].activate();
     g_state.platforms[PLATFORM_COUNT - 2].set_entity_type(PLATFORM);
+
+    // ---- EVIL PLATFORM ---- //
+
+    g_state.evil_platform = new Entity();
+    g_state.evil_platform->set_position(glm::vec3(0.0f, 0.0f, 0.0f));
+    g_state.evil_platform->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
+    g_state.evil_platform->m_speed = 1.0f;
+    g_state.evil_platform->set_entity_type(PLATFORM);
+    g_state.evil_platform->m_texture_id = load_texture(EVIL_PLATFORM_FILEPATH);
+    g_state.evil_platform->set_width(0.5f);
+    g_state.evil_platform->set_height(0.5f);
+    g_state.evil_platform->activate();
 
     // ––––– PLAYER ––––– //
     // Existing
@@ -283,6 +294,10 @@ void process_input()
                 g_lose = false;
                 g_game_is_running = true; // Restart the game
                 fuel = 300.0f;
+
+                g_state.evil_platform->set_position(glm::vec3(0.0f, 0.0f, 0.0f));
+                g_state.evil_platform->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
+                g_state.evil_platform->m_speed = 1.0f;
                 
                 break;
 
@@ -353,10 +368,40 @@ void update()
     while (delta_time >= FIXED_TIMESTEP)
     {
         g_state.player->update(FIXED_TIMESTEP, g_state.platforms, PLATFORM_COUNT);
+
+        g_state.evil_platform->update(FIXED_TIMESTEP, NULL, 0);
+        // Move evil platform side to side
+
+        float evil_platform_x = g_state.evil_platform->get_position().x;
+        float evil_platform_speed = 1.0f; 
+
+        if (g_state.evil_platform->get_position().x > 4.0f) {
+            g_state.evil_platform->set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));
+        }
+        else if (g_state.evil_platform->get_position().x < -4.0f) {
+            g_state.evil_platform->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
+        }
+
+        // Apply movement to the evil platform
+        g_state.evil_platform->set_position(glm::vec3(
+            g_state.evil_platform->get_position().x + g_state.evil_platform->get_movement().x * evil_platform_speed * FIXED_TIMESTEP,
+            g_state.evil_platform->get_position().y,
+            g_state.evil_platform->get_position().z
+        ));
+
         delta_time -= FIXED_TIMESTEP;
     }
 
     g_accumulator = delta_time;
+    if (g_state.player->check_collision(g_state.evil_platform)) {
+        g_lose = true; // Player loses if they collide with the evil platform
+        g_state.player->set_movement(glm::vec3(0.0f));
+        g_state.player->set_velocity(glm::vec3(0.0f));
+        g_state.player->set_acceleration(glm::vec3(0.0f));
+        g_state.evil_platform->set_movement(glm::vec3(0.0f));
+        return;
+        
+    }
 
     
 
@@ -372,6 +417,7 @@ void update()
             g_win = true;
             g_state.player->set_movement(glm::vec3(0.0f));
             g_state.player->set_velocity(glm::vec3(0.0f)); // Reset velocity
+            g_state.evil_platform->set_movement(glm::vec3(0.0f));
             return;
         }
     }
@@ -398,6 +444,7 @@ void update()
         g_lose = true; // Set lose flag
         g_state.player->set_movement(glm::vec3(0.0f));
         g_state.player->set_velocity(glm::vec3(0.0f)); // Reset velocity
+        g_state.evil_platform->set_movement(glm::vec3(0.0f));
         return;
     }
 
@@ -405,11 +452,13 @@ void update()
         g_lose = true; // Set lose flag
         g_state.player->set_movement(glm::vec3(0.0f));
         g_state.player->set_velocity(glm::vec3(0.0f)); // Reset velocity
+        g_state.evil_platform->set_movement(glm::vec3(0.0f));
         return;
     }
 
     if (g_win || g_lose) {
         g_state.player->set_movement(glm::vec3(0.0f));
+        g_state.evil_platform->set_movement(glm::vec3(0.0f));
         return;
     }
 
@@ -503,7 +552,7 @@ void render()
     //draw_text(&g_program, load_texture("shaders/font.png"), "welcome", 0.5f, 0.05f,glm::vec3(-3.5f, 2.0f, 0.0f));
 
     for (int i = 0; i < PLATFORM_COUNT; i++) g_state.platforms[i].render(&g_program);
-
+    g_state.evil_platform->render(&g_program);
 
     // ––––– DISPLAY FUEL ––––– //
     std::string fuel_text = "Fuel: " + std::to_string((int)fuel);
@@ -526,6 +575,7 @@ void shutdown()
     SDL_Quit();
 
     delete[] g_state.platforms;
+    delete g_state.evil_platform;
     delete g_state.player;
 }
 
