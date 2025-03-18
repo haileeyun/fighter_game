@@ -37,6 +37,8 @@ struct GameState
     Entity* player;
     Entity* platforms;
     Entity* evil_platform;
+    Entity* arrow;
+
 };
 
 // ––––– CONSTANTS ––––– //
@@ -86,7 +88,9 @@ float fuel = 500.0f;
 Entity* g_background_cloud;
 Entity* g_big_cloud;
 Entity* g_right_cloud;
-Entity* g_arrow;
+//Entity* g_arrow;
+
+glm::vec3 ARROW_POSITION = glm::vec3(2.5f, -3.0f, 0.0f);
 
 
 // ––––– GENERAL FUNCTIONS ––––– //
@@ -127,7 +131,7 @@ void render_background() {
     GLuint cloud_background_texture_id = load_texture("shaders/cloud_background.png");
     GLuint big_cloud_texture_id = load_texture("shaders/big_cloud.png");
     GLuint right_cloud_texture_id = load_texture("shaders/right_cloud.png");
-    GLuint arrow_texture_id = load_texture("shaders/arrow.png");
+    //GLuint arrow_texture_id = load_texture("shaders/arrow.png");
 
     // Create background entities
     g_background_cloud = new Entity();
@@ -151,12 +155,6 @@ void render_background() {
     g_right_cloud->set_height(7.5f);
     g_right_cloud->set_entity_type(PLAYER);
 
-    g_arrow = new Entity();
-    g_arrow->m_texture_id = arrow_texture_id;
-    g_arrow->set_position(glm::vec3(3.0f, -3.0f, 0.0f));
-    g_arrow->set_width(1.0f);
-    g_arrow->set_height(1.0f);
-    g_arrow->set_entity_type(PLAYER);
     
 }
 
@@ -246,7 +244,15 @@ void initialise()
     g_state.evil_platform->set_height(0.5f);
     g_state.evil_platform->activate();
 
-
+    // ---- ARROW ---- //
+    g_state.arrow = new Entity();
+    g_state.arrow->m_texture_id = load_texture(ARROW_FILEPATH);
+    g_state.arrow->set_position(ARROW_POSITION);
+    g_state.arrow->set_width(1.0f);
+    g_state.arrow->set_height(1.0f);
+    g_state.arrow->set_entity_type(ITEM);
+    g_state.evil_platform->activate();
+    
 
     // ––––– PLAYER ––––– //
     // Existing
@@ -268,6 +274,7 @@ void initialise()
 
 
     g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->DOWN]; // Start with the down animation
+    g_state.player->face_down();
     g_state.player->m_animation_frames = 8; // 8 frames per animation
     g_state.player->m_animation_index = 0;
     g_state.player->m_animation_time = 0.0f;
@@ -292,8 +299,8 @@ void process_input()
 {
     //g_state.player->set_movement(glm::vec3(0.0f)); // they could still be moving
     g_state.player->set_acceleration(glm::vec3(0.0f, -0.5f, 0.0f));
-    g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->DOWN];
-    g_state.player->face_down();
+    //g_state.arrow->set_position(glm::vec3(3.0f, -3.0f, 0.0f));
+    
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -326,6 +333,8 @@ void process_input()
                 g_state.evil_platform->set_position(glm::vec3(0.0f, 0.0f, 0.0f));
                 g_state.evil_platform->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
                 g_state.evil_platform->m_speed = 1.0f;
+
+                g_state.arrow->set_position(ARROW_POSITION);
                 
                 break;
 
@@ -350,16 +359,28 @@ void process_input()
     {
         //g_state.player->m_movement.x = -1.0f;
         g_state.player->set_acceleration(glm::vec3(-1.0f, g_state.player->get_acceleration().y, 0.0f)); // Accelerate left
-        g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];
-        g_state.player->move_left();
+        if (g_state.player->m_collided_bottom) { 
+            g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->UP];
+            g_state.player->move_up();
+        }
+        else {
+            g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];
+            g_state.player->move_left();
+        }
         fuel -= 1.0f;
     }
     else if (key_state[SDL_SCANCODE_RIGHT])
     {
         //g_state.player->m_movement.x = 1.0f;
         g_state.player->set_acceleration(glm::vec3(1.0f, g_state.player->get_acceleration().y, 0.0f)); // Accelerate right
-        g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->RIGHT];
-        g_state.player->move_right();
+        if (g_state.player->m_collided_bottom) {
+            g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->UP];
+            g_state.player->move_up();
+        }
+        else {
+            g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->RIGHT];
+            g_state.player->move_right();
+        }
         fuel -= 1.0f;
     }
     else if (key_state[SDL_SCANCODE_UP])
@@ -369,8 +390,15 @@ void process_input()
         fuel -= 1.0f;
     }
     else {
-        g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->DOWN];
-        g_state.player->face_down();
+        if (g_state.player->m_collided_bottom) {
+            g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->UP];
+            g_state.player->face_up();
+        }
+        else {
+            g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->DOWN];
+            g_state.player->face_down();
+        }
+        
     }
     
 
@@ -401,6 +429,8 @@ void update()
         g_state.player->update(FIXED_TIMESTEP, g_state.platforms, PLATFORM_COUNT);
 
         g_state.evil_platform->update(FIXED_TIMESTEP, NULL, 0);
+        g_state.arrow->update(FIXED_TIMESTEP, NULL, 0);
+
         // Move evil platform side to side
 
         float evil_platform_x = g_state.evil_platform->get_position().x;
@@ -419,6 +449,8 @@ void update()
             g_state.evil_platform->get_position().y,
             g_state.evil_platform->get_position().z
         ));
+
+        g_state.arrow->set_position(ARROW_POSITION);
 
         delta_time -= FIXED_TIMESTEP;
     }
@@ -444,6 +476,8 @@ void update()
 
     // IM SORRY I HAD TO HARDCODE THE WINNING CONDITION BECAUSE I COULDN'T GET CHECK_COLLISION TO WORK :(
     if (g_state.player->m_collided_bottom) {
+        g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->UP];
+        g_state.player->face_up();
         if (g_state.player->get_position().x <= 3.0f && g_state.player->get_position().x >= 2.0f) {
             g_win = true;
             g_state.player->set_movement(glm::vec3(0.0f));
@@ -490,6 +524,7 @@ void update()
     if (g_win || g_lose) {
         g_state.player->set_movement(glm::vec3(0.0f));
         g_state.evil_platform->set_movement(glm::vec3(0.0f));
+        g_state.arrow->set_position(glm::vec3(3.0f, -3.0f, 0.0f));
         return;
     }
 
@@ -586,7 +621,9 @@ void render()
     //draw_text(&g_program, load_texture("shaders/font.png"), "welcome", 0.5f, 0.05f,glm::vec3(-3.5f, 2.0f, 0.0f));
 
     for (int i = 0; i < PLATFORM_COUNT; i++) g_state.platforms[i].render(&g_program);
+
     g_state.evil_platform->render(&g_program);
+    g_state.arrow->render(&g_program);
 
     // ––––– DISPLAY FUEL ––––– //
     std::string fuel_text = "Feathers: " + std::to_string((int)fuel);
@@ -611,6 +648,7 @@ void shutdown()
     delete[] g_state.platforms;
     delete g_state.evil_platform;
     delete g_state.player;
+    delete g_state.arrow;
 }
 
 // ––––– GAME LOOP ––––– //
