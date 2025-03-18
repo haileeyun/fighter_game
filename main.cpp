@@ -60,6 +60,7 @@ const float MILLISECONDS_IN_SECOND = 1000.0;
 const char SPRITESHEET_FILEPATH[] = "shaders/sprite_sheet.png";
 const char PLATFORM_FILEPATH[] = "shaders/cloud.png";
 const char EVIL_PLATFORM_FILEPATH[] = "shaders/evil_cloud.png";
+const char ARROW_FILEPATH[] = "shaders/arrow.png";
 
 const int NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0;
@@ -80,11 +81,12 @@ float g_accumulator = 0.0f;
 bool g_win = false;  // Track if the player wins
 bool g_lose = false; // Track if the player loses
 
-float fuel = 300.0f;
+float fuel = 500.0f;
 
 Entity* g_background_cloud;
 Entity* g_big_cloud;
 Entity* g_right_cloud;
+Entity* g_arrow;
 
 
 // ––––– GENERAL FUNCTIONS ––––– //
@@ -125,6 +127,7 @@ void render_background() {
     GLuint cloud_background_texture_id = load_texture("shaders/cloud_background.png");
     GLuint big_cloud_texture_id = load_texture("shaders/big_cloud.png");
     GLuint right_cloud_texture_id = load_texture("shaders/right_cloud.png");
+    GLuint arrow_texture_id = load_texture("shaders/arrow.png");
 
     // Create background entities
     g_background_cloud = new Entity();
@@ -147,6 +150,14 @@ void render_background() {
     g_right_cloud->set_width(11.0f);
     g_right_cloud->set_height(7.5f);
     g_right_cloud->set_entity_type(PLAYER);
+
+    g_arrow = new Entity();
+    g_arrow->m_texture_id = arrow_texture_id;
+    g_arrow->set_position(glm::vec3(3.0f, -3.0f, 0.0f));
+    g_arrow->set_width(1.0f);
+    g_arrow->set_height(1.0f);
+    g_arrow->set_entity_type(PLAYER);
+    
 }
 
 void initialise()
@@ -235,6 +246,8 @@ void initialise()
     g_state.evil_platform->set_height(0.5f);
     g_state.evil_platform->activate();
 
+
+
     // ––––– PLAYER ––––– //
     // Existing
     g_state.player = new Entity();
@@ -245,20 +258,8 @@ void initialise()
     g_state.player->m_texture_id = load_texture(SPRITESHEET_FILEPATH);
     g_state.player->set_entity_type(PLAYER);
 
-    // Walking
-    //g_state.player->m_walking[g_state.player->LEFT] = new int[4] { 1, 5, 9, 13 };
-    //g_state.player->m_walking[g_state.player->RIGHT] = new int[4] { 3, 7, 11, 15 };
-    //g_state.player->m_walking[g_state.player->UP] = new int[4] { 2, 6, 10, 14 };
-    //g_state.player->m_walking[g_state.player->DOWN] = new int[4] { 0, 4, 8, 12 };
 
-    //g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];  // start player looking left
-    //g_state.player->m_animation_frames = 4;
-    //g_state.player->m_animation_index = 0;
-    //g_state.player->m_animation_time = 0.0f;
-    //g_state.player->m_animation_cols = 4;
-    //g_state.player->m_animation_rows = 4;
-
-    // Set animation indices for the new sprite sheet
+    // Animation
     g_state.player->m_walking[g_state.player->DOWN] = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 }; // Row 0 (down)
     g_state.player->m_walking[g_state.player->LEFT] = new int[8] { 8, 9, 10, 11, 12, 13, 14, 15 }; // Row 1 (left)
     g_state.player->m_walking[g_state.player->RIGHT] = new int[8] { 16, 17, 18, 19, 20, 21, 22, 23 }; // Row 2 (right)
@@ -320,7 +321,7 @@ void process_input()
                 g_win = false;
                 g_lose = false;
                 g_game_is_running = true; // Restart the game
-                fuel = 300.0f;
+                fuel = 500.0f;
 
                 g_state.evil_platform->set_position(glm::vec3(0.0f, 0.0f, 0.0f));
                 g_state.evil_platform->set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
@@ -574,8 +575,11 @@ void render()
 
     // Render the background layers in order (back to front)
     g_background_cloud->render(&g_program); // Back layer
-    g_big_cloud->render(&g_program);       // Middle layer
-    g_right_cloud->render(&g_program);     // Front layer
+    g_big_cloud->render(&g_program); // Middle layer
+    g_right_cloud->render(&g_program); // Front layer
+    //g_arrow->render(&g_program); // the arrow that points to the winning cloud
+    // note to self: can't fix the location yet
+
 
     g_state.player->render(&g_program);
 
@@ -585,7 +589,7 @@ void render()
     g_state.evil_platform->render(&g_program);
 
     // ––––– DISPLAY FUEL ––––– //
-    std::string fuel_text = "Fuel: " + std::to_string((int)fuel);
+    std::string fuel_text = "Feathers: " + std::to_string((int)fuel);
     draw_text(&g_program, load_texture("shaders/font.png"), fuel_text, 0.5f, 0.05f, glm::vec3(-4.5f, 3.5f, 0.0f));
     // ––––– DISPLAY WIN/LOSE MESSAGES ––––– //
     if (g_win)
