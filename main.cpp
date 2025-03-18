@@ -88,7 +88,7 @@ float fuel = 500.0f;
 Entity* g_background_cloud;
 Entity* g_big_cloud;
 Entity* g_right_cloud;
-//Entity* g_arrow;
+
 
 glm::vec3 ARROW_POSITION = glm::vec3(2.5f, -3.0f, 0.0f);
 
@@ -124,7 +124,7 @@ GLuint load_texture(const char* filepath)
 
 
 // move later lol
-GLuint g_font_texture_id = load_texture("shaders/font.png");
+GLuint g_font_texture_id = load_texture("shaders/font_sheet2.png");
 
 void render_background() {
     // Load background textures
@@ -288,7 +288,7 @@ void initialise()
     // Jumping
     g_state.player->m_jumping_power = 3.0f;
 
-    GLuint g_font_texture_id = load_texture("shaders/font.png");
+    GLuint g_font_texture_id = load_texture("shaders/font_sheet2.png");
 
     // ––––– GENERAL ––––– //
     glEnable(GL_BLEND);
@@ -299,8 +299,8 @@ void process_input()
 {
     //g_state.player->set_movement(glm::vec3(0.0f)); // they could still be moving
     g_state.player->set_acceleration(glm::vec3(0.0f, -0.5f, 0.0f));
-    //g_state.arrow->set_position(glm::vec3(3.0f, -3.0f, 0.0f));
-    
+
+
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -524,7 +524,7 @@ void update()
     if (g_win || g_lose) {
         g_state.player->set_movement(glm::vec3(0.0f));
         g_state.evil_platform->set_movement(glm::vec3(0.0f));
-        g_state.arrow->set_position(glm::vec3(3.0f, -3.0f, 0.0f));
+        g_state.arrow->set_position(ARROW_POSITION);
         return;
     }
 
@@ -618,7 +618,6 @@ void render()
 
     g_state.player->render(&g_program);
 
-    //draw_text(&g_program, load_texture("shaders/font.png"), "welcome", 0.5f, 0.05f,glm::vec3(-3.5f, 2.0f, 0.0f));
 
     for (int i = 0; i < PLATFORM_COUNT; i++) g_state.platforms[i].render(&g_program);
 
@@ -627,15 +626,15 @@ void render()
 
     // ––––– DISPLAY FUEL ––––– //
     std::string fuel_text = "Feathers: " + std::to_string((int)fuel);
-    draw_text(&g_program, load_texture("shaders/font.png"), fuel_text, 0.5f, 0.05f, glm::vec3(-4.5f, 3.5f, 0.0f));
+    draw_text(&g_program, load_texture("shaders/font_sheet2.png"), fuel_text, 0.5f, 0.00f, glm::vec3(-4.5f, 3.5f, 0.0f));
     // ––––– DISPLAY WIN/LOSE MESSAGES ––––– //
     if (g_win)
     {
-        draw_text(&g_program, load_texture("shaders/font.png"), "You Win!", 0.5f, 0.05f, glm::vec3(-1.5f, 0.0f, 0.0f));
+        draw_text(&g_program, load_texture("shaders/font_sheet2.png"), "You Win!", 0.5f, 0.00f, glm::vec3(-1.5f, 0.0f, 0.0f));
     }
     else if (g_lose)
     {
-        draw_text(&g_program, load_texture("shaders/font.png"), "You Lose!", 0.5f, 0.05f, glm::vec3(-1.5f, 0.0f, 0.0f));
+        draw_text(&g_program, load_texture("shaders/font_sheet2.png"), "You Lose!", 0.5f, 0.00f, glm::vec3(-2.0f, 0.0f, 0.0f));
     }
 
     SDL_GL_SwapWindow(g_display_window);
