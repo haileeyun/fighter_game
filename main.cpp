@@ -14,7 +14,7 @@
 #define LOG(argument) std::cout << argument << '\n'
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
-#define PLATFORM_COUNT 5
+#define PLATFORM_COUNT 6
 
 #ifdef _WINDOWS
 #include <GL/glew.h>
@@ -57,7 +57,7 @@ const char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
 F_SHADER_PATH[] = "shaders/fragment_textured.glsl";
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
-const char SPRITESHEET_FILEPATH[] = "shaders/george_0.png";
+const char SPRITESHEET_FILEPATH[] = "shaders/sprite_sheet.png";
 const char PLATFORM_FILEPATH[] = "shaders/cloud.png";
 const char EVIL_PLATFORM_FILEPATH[] = "shaders/evil_cloud.png";
 
@@ -186,20 +186,28 @@ void initialise()
     GLuint platform_texture_id = load_texture(PLATFORM_FILEPATH);
 
     g_state.platforms = new Entity[PLATFORM_COUNT];
+
+    g_state.platforms[0].m_texture_id = platform_texture_id;
+    g_state.platforms[0].set_position(glm::vec3(4.0f, -1.0f, 0.0f));
+    g_state.platforms[0].set_width(0.5f);
+    g_state.platforms[0].set_height(0.5f);
+    g_state.platforms[0].update(0.0f, NULL, 0);
+    g_state.platforms[0].activate();
+    g_state.platforms[0].set_entity_type(PLATFORM);
     
 
-    g_state.platforms[PLATFORM_COUNT - 1].m_texture_id = platform_texture_id;
-    g_state.platforms[PLATFORM_COUNT - 1].set_position(glm::vec3(-2.5f, -2.35f, 0.0f));
-    g_state.platforms[PLATFORM_COUNT - 1].set_width(0.5f);
-    g_state.platforms[PLATFORM_COUNT - 1].set_height(0.5f);
-    g_state.platforms[PLATFORM_COUNT - 1].update(0.0f, NULL, 0);
-    g_state.platforms[PLATFORM_COUNT - 1].activate();
-    g_state.platforms[PLATFORM_COUNT - 1].set_entity_type(PLATFORM);
+    g_state.platforms[1].m_texture_id = platform_texture_id;
+    g_state.platforms[1].set_position(glm::vec3(-2.5f, -2.0f, 0.0f));
+    g_state.platforms[1].set_width(0.5f);
+    g_state.platforms[1].set_height(0.5f);
+    g_state.platforms[1].update(0.0f, NULL, 0);
+    g_state.platforms[1].activate();
+    g_state.platforms[1].set_entity_type(PLATFORM);
 
-    for (int i = 0; i < PLATFORM_COUNT - 2; i++)
+    for (int i = 3; i < PLATFORM_COUNT; i++)
     {
         g_state.platforms[i].m_texture_id = platform_texture_id;
-        g_state.platforms[i].set_position(glm::vec3(i - 1.0f, -3.0f, 0.0f));
+        g_state.platforms[i].set_position(glm::vec3(i - 4.0f, -3.0f, 0.0f));
         g_state.platforms[i].set_width(0.5f);
         g_state.platforms[i].set_height(0.5f);
         g_state.platforms[i].update(0.0f, NULL, 0);
@@ -207,13 +215,13 @@ void initialise()
         g_state.platforms[i].set_entity_type(PLATFORM);
     }
 
-    g_state.platforms[PLATFORM_COUNT - 2].m_texture_id = platform_texture_id;
-    g_state.platforms[PLATFORM_COUNT - 2].set_position(glm::vec3(2.5f, -2.5f, 0.0f));
-    g_state.platforms[PLATFORM_COUNT - 2].set_width(0.5f);
-    g_state.platforms[PLATFORM_COUNT - 2].set_height(0.5f);
-    g_state.platforms[PLATFORM_COUNT - 2].update(0.0f, NULL, 0);
-    g_state.platforms[PLATFORM_COUNT - 2].activate();
-    g_state.platforms[PLATFORM_COUNT - 2].set_entity_type(PLATFORM);
+    g_state.platforms[2].m_texture_id = platform_texture_id;
+    g_state.platforms[2].set_position(glm::vec3(2.5f, -2.5f, 0.0f));
+    g_state.platforms[2].set_width(0.5f);
+    g_state.platforms[2].set_height(0.5f);
+    g_state.platforms[2].update(0.0f, NULL, 0);
+    g_state.platforms[2].activate();
+    g_state.platforms[2].set_entity_type(PLATFORM);
 
     // ---- EVIL PLATFORM ---- //
 
@@ -238,17 +246,34 @@ void initialise()
     g_state.player->set_entity_type(PLAYER);
 
     // Walking
-    g_state.player->m_walking[g_state.player->LEFT] = new int[4] { 1, 5, 9, 13 };
-    g_state.player->m_walking[g_state.player->RIGHT] = new int[4] { 3, 7, 11, 15 };
-    g_state.player->m_walking[g_state.player->UP] = new int[4] { 2, 6, 10, 14 };
-    g_state.player->m_walking[g_state.player->DOWN] = new int[4] { 0, 4, 8, 12 };
+    //g_state.player->m_walking[g_state.player->LEFT] = new int[4] { 1, 5, 9, 13 };
+    //g_state.player->m_walking[g_state.player->RIGHT] = new int[4] { 3, 7, 11, 15 };
+    //g_state.player->m_walking[g_state.player->UP] = new int[4] { 2, 6, 10, 14 };
+    //g_state.player->m_walking[g_state.player->DOWN] = new int[4] { 0, 4, 8, 12 };
 
-    g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];  // start player looking left
-    g_state.player->m_animation_frames = 4;
+    //g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];  // start player looking left
+    //g_state.player->m_animation_frames = 4;
+    //g_state.player->m_animation_index = 0;
+    //g_state.player->m_animation_time = 0.0f;
+    //g_state.player->m_animation_cols = 4;
+    //g_state.player->m_animation_rows = 4;
+
+    // Set animation indices for the new sprite sheet
+    g_state.player->m_walking[g_state.player->DOWN] = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 }; // Row 0 (down)
+    g_state.player->m_walking[g_state.player->LEFT] = new int[8] { 8, 9, 10, 11, 12, 13, 14, 15 }; // Row 1 (left)
+    g_state.player->m_walking[g_state.player->RIGHT] = new int[8] { 16, 17, 18, 19, 20, 21, 22, 23 }; // Row 2 (right)
+    g_state.player->m_walking[g_state.player->UP] = new int[8] { 24, 25, 26, 27, 28, 29, 30, 31 }; // Row 3 (up)
+
+
+
+    g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->DOWN]; // Start with the down animation
+    g_state.player->m_animation_frames = 8; // 8 frames per animation
     g_state.player->m_animation_index = 0;
     g_state.player->m_animation_time = 0.0f;
-    g_state.player->m_animation_cols = 4;
-    g_state.player->m_animation_rows = 4;
+    g_state.player->m_animation_cols = 8; // 8 columns in the sprite sheet
+    g_state.player->m_animation_rows = 4; // 4 rows in the sprite sheet
+
+
     g_state.player->set_height(0.9f);
     g_state.player->set_width(0.9f);
 
@@ -266,6 +291,8 @@ void process_input()
 {
     //g_state.player->set_movement(glm::vec3(0.0f)); // they could still be moving
     g_state.player->set_acceleration(glm::vec3(0.0f, -0.5f, 0.0f));
+    g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->DOWN];
+    g_state.player->face_down();
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -340,7 +367,10 @@ void process_input()
         g_state.player->face_up();
         fuel -= 1.0f;
     }
-
+    else {
+        g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->DOWN];
+        g_state.player->face_down();
+    }
     
 
 
