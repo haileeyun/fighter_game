@@ -38,6 +38,7 @@ struct GameState
     Entity* platforms;
     Entity* evil_platform;
     Entity* arrow;
+    Entity* arrow2;
 
 };
 
@@ -59,10 +60,12 @@ const char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
 F_SHADER_PATH[] = "shaders/fragment_textured.glsl";
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
-const char SPRITESHEET_FILEPATH[] = "shaders/sprite_sheet.png";
+const char SPRITESHEET_FILEPATH[] = "shaders/flying_animation_sprite_sheet.png";
 const char PLATFORM_FILEPATH[] = "shaders/cloud.png";
 const char EVIL_PLATFORM_FILEPATH[] = "shaders/evil_cloud.png";
-const char ARROW_FILEPATH[] = "shaders/arrow.png";
+const char ARROW_FILEPATH[] = "shaders/white_arrow.png";
+const char ARROW2_FILEPATH[] = "shaders/white_arrow2.png";
+
 
 const int NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0;
@@ -91,6 +94,7 @@ Entity* g_right_cloud;
 
 
 glm::vec3 ARROW_POSITION = glm::vec3(2.5f, -3.0f, 0.0f);
+glm::vec3 ARROW2_POSITION = glm::vec3(3.3f, -2.9f, 0.0f);
 
 
 // ––––– GENERAL FUNCTIONS ––––– //
@@ -244,14 +248,21 @@ void initialise()
     g_state.evil_platform->set_height(0.5f);
     g_state.evil_platform->activate();
 
-    // ---- ARROW ---- //
+    // ---- ARROW 1 ---- //
     g_state.arrow = new Entity();
     g_state.arrow->m_texture_id = load_texture(ARROW_FILEPATH);
     g_state.arrow->set_position(ARROW_POSITION);
     g_state.arrow->set_width(1.0f);
     g_state.arrow->set_height(1.0f);
     g_state.arrow->set_entity_type(ITEM);
-    g_state.evil_platform->activate();
+
+    // ---- ARROW 2 ---- //
+    g_state.arrow2 = new Entity();
+    g_state.arrow2->m_texture_id = load_texture(ARROW2_FILEPATH);
+    g_state.arrow2->set_position(ARROW2_POSITION);
+    g_state.arrow2->set_width(1.0f);
+    g_state.arrow2->set_height(1.0f);
+    g_state.arrow2->set_entity_type(ITEM);
     
 
     // ––––– PLAYER ––––– //
@@ -335,6 +346,7 @@ void process_input()
                 g_state.evil_platform->m_speed = 1.0f;
 
                 g_state.arrow->set_position(ARROW_POSITION);
+                g_state.arrow2->set_position(ARROW2_POSITION);
                 
                 break;
 
@@ -430,6 +442,8 @@ void update()
 
         g_state.evil_platform->update(FIXED_TIMESTEP, NULL, 0);
         g_state.arrow->update(FIXED_TIMESTEP, NULL, 0);
+        g_state.arrow2->update(FIXED_TIMESTEP, NULL, 0);
+
 
         // Move evil platform side to side
 
@@ -451,6 +465,8 @@ void update()
         ));
 
         g_state.arrow->set_position(ARROW_POSITION);
+        g_state.arrow2->set_position(ARROW2_POSITION);
+
 
         delta_time -= FIXED_TIMESTEP;
     }
@@ -525,6 +541,8 @@ void update()
         g_state.player->set_movement(glm::vec3(0.0f));
         g_state.evil_platform->set_movement(glm::vec3(0.0f));
         g_state.arrow->set_position(ARROW_POSITION);
+        g_state.arrow2->set_position(ARROW2_POSITION);
+
         return;
     }
 
@@ -623,6 +641,8 @@ void render()
 
     g_state.evil_platform->render(&g_program);
     g_state.arrow->render(&g_program);
+    g_state.arrow2->render(&g_program);
+
 
     // ––––– DISPLAY FUEL ––––– //
     std::string fuel_text = "Feathers: " + std::to_string((int)fuel);
@@ -648,6 +668,7 @@ void shutdown()
     delete g_state.evil_platform;
     delete g_state.player;
     delete g_state.arrow;
+    delete g_state.arrow2;
 }
 
 // ––––– GAME LOOP ––––– //
