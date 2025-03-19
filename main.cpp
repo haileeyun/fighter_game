@@ -626,12 +626,10 @@ void render()
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Render the background layers in order (back to front)
+    // ----- RENDERING STUFF ---- //
     g_background_cloud->render(&g_program); // Back layer
     g_big_cloud->render(&g_program); // Middle layer
     g_right_cloud->render(&g_program); // Front layer
-    //g_arrow->render(&g_program); // the arrow that points to the winning cloud
-    // note to self: can't fix the location yet
 
 
     g_state.player->render(&g_program);
@@ -647,6 +645,8 @@ void render()
     // ––––– DISPLAY FUEL ––––– //
     std::string fuel_text = "Feathers: " + std::to_string((int)fuel);
     draw_text(&g_program, load_texture("shaders/font_sheet2.png"), fuel_text, 0.5f, 0.00f, glm::vec3(-4.5f, 3.5f, 0.0f));
+    
+    
     // ––––– DISPLAY WIN/LOSE MESSAGES ––––– //
     if (g_win)
     {
