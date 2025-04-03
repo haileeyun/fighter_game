@@ -69,7 +69,7 @@ void LevelA::initialise()
         PLAYER
     );
 
-    m_game_state.player->set_position(glm::vec3(2.0f, -3.0f, 0.0f));
+    m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
 
     // Jumping
     m_game_state.player->set_jumping_power(3.0f);
@@ -90,7 +90,7 @@ void LevelA::initialise()
     }
 
 
-    m_game_state.enemies[0].set_position(glm::vec3(3.0f, 3.0f, 0.0f));
+    m_game_state.enemies[0].set_position(glm::vec3(5.0f, 5.0f, 0.0f));
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     m_game_state.enemies[0].activate();
     
@@ -118,12 +118,11 @@ void LevelA::update(float delta_time)
             m_game_state.next_scene_id = 0;  // temp -> gonna change to taking a life later
             return;  // Exit immediately after collision
         }
-        m_game_state.enemies[i].update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
+        m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
 
     }
 
-    
-    
+
     if (m_game_state.player->get_position().y < -10.0f) m_game_state.next_scene_id = 2;
 }
 

@@ -355,11 +355,6 @@ void Entity::render(ShaderProgram* program)
 {
     program->set_model_matrix(m_model_matrix);
 
-    if (!m_is_active) {
-        __debugbreak();
-        return;
-    }
-
     if (m_animation_indices != NULL)
     {
         draw_sprite_from_texture_atlas(program, m_texture_id, m_animation_indices[m_animation_index]);
