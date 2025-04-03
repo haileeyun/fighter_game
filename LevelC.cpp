@@ -15,9 +15,9 @@ unsigned int LEVELC_DATA[] =
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
-    3, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2,
-    3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    3, 1, 1, 1, 0, 0, 1, 1, 0, 0, 2, 2, 2, 2,
+    3, 2, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2
 };
 
 LevelC::~LevelC()
@@ -69,7 +69,7 @@ void LevelC::initialise()
         PLAYER
     );
 
-    m_game_state.player->set_position(glm::vec3(5.0f, 0.0f, 0.0f));
+    m_game_state.player->set_position(glm::vec3(1.0f, 0.0f, 0.0f));
 
     // Jumping
     m_game_state.player->set_jumping_power(3.0f);
@@ -107,7 +107,7 @@ void LevelC::update(float delta_time)
 {
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
 
-    if (m_game_state.player->get_position().y < -10.0f) m_game_state.next_scene_id = 3;
+    if (m_game_state.player->get_position().y < -10.0f) m_game_state.next_scene_id = 0;
 }
 
 void LevelC::render(ShaderProgram* program)

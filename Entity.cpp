@@ -12,6 +12,9 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "ShaderProgram.h"
 #include "Entity.h"
+#include "Utility.h"
+#define LOG(argument) std::cout << argument << '\n'
+
 
 void Entity::ai_activate(Entity* player)
 {
@@ -352,6 +355,11 @@ void Entity::render(ShaderProgram* program)
 {
     program->set_model_matrix(m_model_matrix);
 
+    if (!m_is_active) {
+        __debugbreak();
+        return;
+    }
+
     if (m_animation_indices != NULL)
     {
         draw_sprite_from_texture_atlas(program, m_texture_id, m_animation_indices[m_animation_index]);
@@ -372,4 +380,6 @@ void Entity::render(ShaderProgram* program)
 
     glDisableVertexAttribArray(program->get_position_attribute());
     glDisableVertexAttribArray(program->get_tex_coordinate_attribute());
+
+    //__debugbreak();
 }
