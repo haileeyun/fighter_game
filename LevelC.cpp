@@ -16,7 +16,7 @@ unsigned int LEVELC_DATA[] =
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 1, 1, 1, 0, 0, 1, 1, 0, 0, 2, 2, 2, 2,
+    3, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1,
     3, 2, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2
 };
 
@@ -69,7 +69,7 @@ void LevelC::initialise()
         PLAYER
     );
 
-    m_game_state.player->set_position(glm::vec3(1.0f, 0.0f, 0.0f));
+    m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
 
     // Jumping
     m_game_state.player->set_jumping_power(3.0f);

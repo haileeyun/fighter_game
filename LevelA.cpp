@@ -36,11 +36,8 @@ void LevelA::initialise()
     GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
     m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELA_DATA, map_texture_id, 1.0f, 4, 1);
 
-    // Code from main.cpp's initialise()
-    /**
-     George's Stuff
-     */
-     // Existing
+    // PLAYER CODE
+
     int player_walking_animation[4][4] =
     {
         { 1, 5, 9, 13 },  // for George to move to the left,
@@ -72,8 +69,8 @@ void LevelA::initialise()
     m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
 
 
-    /**
-    Enemies' stuff */
+    // ENEMIES
+
     GLuint enemy_texture_id = Utility::load_texture(ENEMY_FILEPATH);
 
     if (enemy_texture_id == 0) {
