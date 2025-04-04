@@ -117,8 +117,9 @@ void LevelA::update(float delta_time)
             //return;  // Exit immediately after collision
             *lives -= 1;
             if (*lives == 0) {
-                m_game_state.next_scene_id = 0; // Return to menu
+                m_game_state.next_scene_id = 4; // render lose scene
                 *lives = 3;
+                return;
             }
             m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
             m_game_state.enemies[i].set_position(glm::vec3(7.0f, 5.0f, 0.0f));

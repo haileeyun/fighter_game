@@ -48,6 +48,9 @@
     <ClCompile Include="LevelC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lose_scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderProgram.h">
@@ -78,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="menu_screen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lose_scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
