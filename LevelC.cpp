@@ -107,7 +107,7 @@ void LevelC::update(float delta_time)
 {
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
 
-    if (m_game_state.player->get_position().y < -10.0f) m_game_state.next_scene_id = 0;
+    if (m_game_state.player->get_position().y < -10.0f) m_game_state.next_scene_id = 5;
 }
 
 void LevelC::render(ShaderProgram* program)

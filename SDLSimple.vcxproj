@@ -147,6 +147,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="win_scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Effects.h" />
@@ -160,6 +161,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="Utility.h" />
+    <ClInclude Include="win_scene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -27,6 +27,7 @@
 #include "LevelB.h"
 #include "LevelC.h"
 #include "lose_scene.h"
+#include "win_scene.h"
 #include "Effects.h"
 
 // ––––– CONSTANTS ––––– //
@@ -57,10 +58,11 @@ LevelB* g_levelB;
 LevelC* g_levelC;
 MenuScreen* g_menu_screen;
 LoseScene* g_lose_scene;
+WinScene* g_win_scene;
 
 
 Effects* g_effects;
-Scene* g_levels[5]; // putting the start screen at the end for now
+Scene* g_levels[6]; 
 
 SDL_Window* g_display_window;
 
@@ -138,6 +140,7 @@ void initialise()
     g_levelB = new LevelB();
     g_levelC = new LevelC();
     g_lose_scene = new LoseScene();
+    g_win_scene = new WinScene();
 
 
     g_levels[0] = g_menu_screen; 
@@ -145,6 +148,7 @@ void initialise()
     g_levels[2] = g_levelB;
     g_levels[3] = g_levelC;
     g_levels[4] = g_lose_scene;
+    g_levels[5] = g_win_scene;
 
 
     // start at menu_screen
@@ -161,7 +165,7 @@ void initialise()
 void process_input()
 {
     // VERY IMPORTANT: If nothing is pressed, we don't want to go anywhere
-    if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene) {
+    if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene && g_current_scene != g_win_scene) {
         g_current_scene->get_state().player->set_movement(glm::vec3(0.0f));
 
     }
@@ -185,7 +189,7 @@ void process_input()
 
             case SDLK_SPACE:
                 // Jump
-                if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene) {
+                if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene && g_current_scene != g_win_scene) {
                     if (g_current_scene->get_state().player->get_collided_bottom())
                     {
                         g_current_scene->get_state().player->jump();
@@ -210,7 +214,7 @@ void process_input()
             break;
         }
     }
-    if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene) {
+    if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene && g_current_scene != g_win_scene) {
         const Uint8* key_state = SDL_GetKeyboardState(NULL);
 
         if (key_state[SDL_SCANCODE_LEFT])        g_current_scene->get_state().player->move_left();
@@ -247,7 +251,7 @@ void update()
     // Reset view matrix for all scenes
     g_view_matrix = glm::mat4(1.0f);
 
-    if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene) {
+    if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene && g_current_scene != g_win_scene) {
         // Only adjust view for game levels
         if (g_current_scene->get_state().player->get_position().x > LEVEL1_LEFT_EDGE) {
             g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-g_current_scene->get_state().player->get_position().x, 3.75, 0));
@@ -286,6 +290,7 @@ void shutdown()
     delete g_levelC;
     delete g_menu_screen;
     delete g_lose_scene;
+    delete g_win_scene;
     delete g_effects;
 }
 
