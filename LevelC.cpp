@@ -114,4 +114,10 @@ void LevelC::render(ShaderProgram* program)
 {
     m_game_state.map->render(program);
     m_game_state.player->render(program);
+
+    if (lives != nullptr) {
+        std::string lives_text = "Lives: " + std::to_string(*lives);
+        Utility::draw_text(program, Utility::load_texture("assets/font1.png"),
+            lives_text, 0.5f, 0.0f, glm::vec3(3.0f, -0.5f, 0.0f));
+    }
 }

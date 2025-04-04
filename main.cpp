@@ -90,6 +90,10 @@ void shutdown();
 // ––––– GENERAL FUNCTIONS ––––– //
 void switch_to_scene(Scene* scene)
 {
+    if (g_current_scene != nullptr) {
+        // Pass the lives pointer to the new scene
+        //scene->set_lives(g_current_scene->lives);
+    }
     g_current_scene = scene;
     g_current_scene->initialise(); // DON'T FORGET THIS STEP!
 }
@@ -133,7 +137,7 @@ void initialise()
     g_levelC = new LevelC();
 
 
-    g_levels[0] = g_menu_screen; // change later
+    g_levels[0] = g_menu_screen; 
     g_levels[1] = g_levelA;
     g_levels[2] = g_levelB;
     g_levels[3] = g_levelC;
@@ -143,6 +147,8 @@ void initialise()
     switch_to_scene(g_levels[0]);
     lives = 3;
     g_levels[1]->set_lives(&lives);
+    g_levels[2]->set_lives(&lives);
+    g_levels[3]->set_lives(&lives);
 
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
     //g_effects->start(SHRINK, 2.0f);
