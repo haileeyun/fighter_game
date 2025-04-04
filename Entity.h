@@ -22,7 +22,7 @@ private:
     EntityType m_entity_type;
     AIType     m_ai_type;
     AIState    m_ai_state;
-    // ————— TRANSFORMATIONS ————— //
+    //  TRANSFORMATIONS  //
     glm::vec3 m_movement;
     glm::vec3 m_position;
     glm::vec3 m_scale;
@@ -36,10 +36,10 @@ private:
 
     bool m_is_jumping;
 
-    // ————— TEXTURES ————— //
+    // TEXTURES //
     GLuint    m_texture_id;
 
-    // ————— ANIMATION ————— //
+    //  ANIMATION  //
     int m_animation_cols;
     int m_animation_frames,
         m_animation_index,
@@ -50,17 +50,17 @@ private:
 
     float m_width = 1.0f,
         m_height = 1.0f;
-    // ————— COLLISIONS ————— //
+    //  COLLISIONS //
     bool m_collided_top = false;
     bool m_collided_bottom = false;
     bool m_collided_left = false;
     bool m_collided_right = false;
 
 public:
-    // ————— STATIC VARIABLES ————— //
+    // STATIC VARIABLES  //
     static constexpr int SECONDS_PER_FRAME = 4;
 
-    // ————— METHODS ————— //
+    // METHODS  //
     Entity();
     Entity(GLuint texture_id, float speed, glm::vec3 acceleration, float jump_power, int walking[4][4], float animation_time,
         int animation_frames, int animation_index, int animation_cols,
@@ -100,7 +100,7 @@ public:
 
     void const jump() { m_is_jumping = true; }
 
-    // ————— GETTERS ————— //
+    // GETTERS  //
     EntityType const get_entity_type()    const { return m_entity_type; };
     AIType     const get_ai_type()        const { return m_ai_type; };
     AIState    const get_ai_state()       const { return m_ai_state; };
@@ -119,7 +119,7 @@ public:
 
     void activate() { m_is_active = true; };
     void deactivate() { m_is_active = false; };
-    // ————— SETTERS ————— //
+    //  SETTERS //
     void const set_entity_type(EntityType new_entity_type) { m_entity_type = new_entity_type; };
     void const set_ai_type(AIType new_ai_type) { m_ai_type = new_ai_type; };
     void const set_ai_state(AIState new_state) { m_ai_state = new_state; };

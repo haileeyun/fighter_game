@@ -71,6 +71,11 @@ float g_accumulator = 0.0f;
 
 bool g_is_colliding_bottom = false;
 
+int lives;
+
+
+
+
 AppStatus g_app_status = RUNNING;
 
 void swtich_to_scene(Scene* scene);
@@ -79,6 +84,8 @@ void process_input();
 void update();
 void render();
 void shutdown();
+
+
 
 // ––––– GENERAL FUNCTIONS ––––– //
 void switch_to_scene(Scene* scene)
@@ -124,16 +131,18 @@ void initialise()
     g_levelA = new LevelA();
     g_levelB = new LevelB();
     g_levelC = new LevelC();
-    
+
 
     g_levels[0] = g_menu_screen; // change later
     g_levels[1] = g_levelA;
     g_levels[2] = g_levelB;
     g_levels[3] = g_levelC;
-    
+
 
     // start at menu_screen
     switch_to_scene(g_levels[0]);
+    lives = 3;
+    g_levels[1]->set_lives(&lives);
 
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
     //g_effects->start(SHRINK, 2.0f);
@@ -173,7 +182,7 @@ void process_input()
                         Mix_PlayChannel(-1, g_current_scene->get_state().jump_sfx, 0);
                     }
                 }
-                
+
                 break;
 
                 // maybe the case goes here

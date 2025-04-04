@@ -5,7 +5,7 @@
 #define LEVEL_HEIGHT 8
 
 constexpr char SPRITESHEET_FILEPATH[] = "assets/george_0.png",
-ENEMY_FILEPATH[] = "assets/soph.png";
+ENEMY_FILEPATH[] = "assets/black_cat.png";
 
 
 unsigned int LEVELA_DATA[] =
@@ -49,7 +49,7 @@ void LevelA::initialise()
         { 0, 4, 8, 12 }   // for George to move downwards
     };
 
-    glm::vec3 acceleration = glm::vec3(0.0f, -4.81f, 0.0f);
+    glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
     GLuint player_texture_id = Utility::load_texture(SPRITESHEET_FILEPATH);
 
@@ -71,8 +71,6 @@ void LevelA::initialise()
 
     m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
 
-    // Jumping
-    m_game_state.player->set_jumping_power(3.0f);
 
     /**
     Enemies' stuff */
@@ -80,7 +78,7 @@ void LevelA::initialise()
 
     if (enemy_texture_id == 0) {
         __debugbreak();
-   }
+    }
 
     m_game_state.enemies = new Entity[ENEMY_COUNT];
 
@@ -90,10 +88,10 @@ void LevelA::initialise()
     }
 
 
-    m_game_state.enemies[0].set_position(glm::vec3(5.0f, 5.0f, 0.0f));
+    m_game_state.enemies[0].set_position(glm::vec3(7.0f, 5.0f, 0.0f));
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     m_game_state.enemies[0].activate();
-    
+
 
 
 
@@ -115,8 +113,17 @@ void LevelA::update(float delta_time)
 
     for (int i = 0; i < ENEMY_COUNT; i++) {
         if (m_game_state.player->check_collision(&m_game_state.enemies[i])) {
-            m_game_state.next_scene_id = 0;  // temp -> gonna change to taking a life later
-            return;  // Exit immediately after collision
+            //m_game_state.next_scene_id = 0;  // temp -> gonna change to taking a life later
+            //return;  // Exit immediately after collision
+            *lives -= 1;
+            if (*lives == 0) {
+                m_game_state.next_scene_id = 0; // Return to menu
+                *lives = 3;
+            }
+            m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
+            m_game_state.enemies[i].set_position(glm::vec3(7.0f, 5.0f, 0.0f));
+
+
         }
         m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
 
@@ -135,6 +142,12 @@ void LevelA::render(ShaderProgram* program)
     for (int i = 0; i < ENEMY_COUNT; i++) {
         m_game_state.enemies[i].render(program);
     }
-        
+
+    if (lives != nullptr) {
+        std::string lives_text = "Lives: " + std::to_string(*lives);
+        Utility::draw_text(program, Utility::load_texture("assets/font1.png"),
+            lives_text, 0.5f, 0.0f, glm::vec3(3.0f, -0.5f, 0.0f));
+    }
+
 
 }
