@@ -1,5 +1,6 @@
 #include "LevelA.h"
 #include "Utility.h"
+#include "Entity.h"
 
 #define LEVEL_WIDTH 14
 #define LEVEL_HEIGHT 8
@@ -26,7 +27,6 @@ LevelA::~LevelA()
     delete    m_game_state.player;
     delete    m_game_state.map;
     Mix_FreeChunk(m_game_state.jump_sfx);
-    Mix_FreeMusic(m_game_state.bgm);
 }
 
 void LevelA::initialise()
@@ -35,6 +35,11 @@ void LevelA::initialise()
 
     GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
     m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELA_DATA, map_texture_id, 1.0f, 4, 1);
+
+    // extra platforms (not using Map class)
+    GLuint floating_grass_texture_id = Utility::load_texture("assets/floating_grass_tile.png");
+    m_platforms.push_back(new Platform(floating_grass_texture_id, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f, 0.5f));
+    
 
     // PLAYER CODE
 
@@ -95,11 +100,7 @@ void LevelA::initialise()
     /**
      BGM and SFX
      */
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
-
-    m_game_state.bgm = Mix_LoadMUS("assets/dooblydoo.mp3");
-    Mix_PlayMusic(m_game_state.bgm, -1);
-    Mix_VolumeMusic(0);
+    
 
     m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
 }
@@ -127,6 +128,10 @@ void LevelA::update(float delta_time)
 
     }
 
+    for (Platform* platform : m_platforms) {
+        m_game_state.player->check_collision(platform);
+    }
+
 
     if (m_game_state.player->get_position().y < -10.0f) m_game_state.next_scene_id = 2;
 }
@@ -139,6 +144,11 @@ void LevelA::render(ShaderProgram* program)
     // render enemies
     for (int i = 0; i < ENEMY_COUNT; i++) {
         m_game_state.enemies[i].render(program);
+    }
+
+    // Render platforms
+    for (Platform* platform : m_platforms) {
+        platform->render(program);
     }
 
     if (lives != nullptr) {

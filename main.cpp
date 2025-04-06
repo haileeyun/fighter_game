@@ -77,6 +77,7 @@ bool g_is_colliding_bottom = false;
 
 int lives;
 
+Mix_Music* g_bgm = nullptr;
 
 
 
@@ -105,7 +106,7 @@ void switch_to_scene(Scene* scene)
 void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    g_display_window = SDL_CreateWindow("Hello, Special Effects!",
+    g_display_window = SDL_CreateWindow("rise_of_the_ai",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL);
@@ -160,6 +161,21 @@ void initialise()
 
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
     //g_effects->start(SHRINK, 2.0f);
+
+
+    // AUDIO
+    Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 2048);
+    Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG);
+
+    // Load music once
+    g_bgm = Mix_LoadMUS("assets/drums.wav");
+    if (!g_bgm) {
+        printf("Failed to load music: %s\n", Mix_GetError());
+    }
+
+    // Start playing (looped)
+    Mix_PlayMusic(g_bgm, -1); // -1 = infinite loop
+    Mix_VolumeMusic(MIX_MAX_VOLUME / 2); // 50% volume
 }
 
 void process_input()
@@ -292,6 +308,12 @@ void shutdown()
     delete g_lose_scene;
     delete g_win_scene;
     delete g_effects;
+
+    Mix_HaltMusic();
+    if (g_bgm) {
+        Mix_FreeMusic(g_bgm);
+        g_bgm = nullptr;
+    }
 }
 
 // ––––– DRIVER GAME LOOP ––––– //

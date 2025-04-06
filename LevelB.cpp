@@ -25,7 +25,6 @@ LevelB::~LevelB()
     delete    m_game_state.player;
     delete    m_game_state.map;
     Mix_FreeChunk(m_game_state.jump_sfx);
-    Mix_FreeMusic(m_game_state.bgm);
 }
 
 void LevelB::initialise()
@@ -97,11 +96,7 @@ void LevelB::initialise()
     /**
      BGM and SFX
      */
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
-
-    m_game_state.bgm = Mix_LoadMUS("assets/dooblydoo.mp3");
-    Mix_PlayMusic(m_game_state.bgm, -1);
-    Mix_VolumeMusic(0);
+    
 
     m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
 }

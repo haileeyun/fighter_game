@@ -144,6 +144,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="menu_screen.cpp" />
+    <ClCompile Include="Platform.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="Utility.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="lose_scene.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="menu_screen.h" />
+    <ClInclude Include="Platform.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="Utility.h" />

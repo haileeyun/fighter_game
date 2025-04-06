@@ -14,10 +14,10 @@ unsigned int LEVELC_DATA[] =
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1,
-    3, 2, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2
+    3, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
+    3, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    3, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+    3, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2
 };
 
 LevelC::~LevelC()
@@ -26,7 +26,6 @@ LevelC::~LevelC()
     delete    m_game_state.player;
     delete    m_game_state.map;
     Mix_FreeChunk(m_game_state.jump_sfx);
-    Mix_FreeMusic(m_game_state.bgm);
 }
 
 void LevelC::initialise()
@@ -94,11 +93,7 @@ void LevelC::initialise()
     /**
      BGM and SFX
      */
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
-
-    m_game_state.bgm = Mix_LoadMUS("assets/dooblydoo.mp3");
-    Mix_PlayMusic(m_game_state.bgm, -1);
-    Mix_VolumeMusic(0);
+    
 
     m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
 }

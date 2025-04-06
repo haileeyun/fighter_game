@@ -61,6 +61,8 @@ void Entity::ai_guard(Entity* player)
         break;
     }
 }
+
+
 // Default constructor
 Entity::Entity()
     : m_position(0.0f), m_movement(0.0f), m_scale(1.0f, 1.0f, 0.0f), m_model_matrix(1.0f),

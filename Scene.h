@@ -27,7 +27,7 @@ struct GameState
     Entity* enemies;
 
     // ————— AUDIO ————— //
-    Mix_Music* bgm;
+    //Mix_Music* bgm; // should be global now
     Mix_Chunk* jump_sfx;
 
     // ————— POINTERS TO OTHER SCENES ————— //
@@ -50,6 +50,7 @@ public:
 
     // ————— GETTERS ————— //
     GameState const get_state() const { return m_game_state; }
+    GameState& get_state() { return m_game_state; }
     int const get_number_of_enemies() const { return m_number_of_enemies; }
 
     // SETTERS
