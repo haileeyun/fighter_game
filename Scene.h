@@ -29,6 +29,8 @@ struct GameState
     // ————— AUDIO ————— //
     //Mix_Music* bgm; // should be global now
     Mix_Chunk* jump_sfx;
+    Mix_Chunk* level_up_sfx;
+    Mix_Chunk* punch_sfx;
 
     // ————— POINTERS TO OTHER SCENES ————— //
     int next_scene_id;

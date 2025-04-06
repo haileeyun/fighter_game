@@ -27,6 +27,10 @@ LevelA::~LevelA()
     delete    m_game_state.player;
     delete    m_game_state.map;
     Mix_FreeChunk(m_game_state.jump_sfx);
+    Mix_FreeChunk(m_game_state.level_up_sfx);  
+    Mix_FreeChunk(m_game_state.punch_sfx); 
+
+
 }
 
 void LevelA::initialise()
@@ -103,6 +107,9 @@ void LevelA::initialise()
     
 
     m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
+    m_game_state.level_up_sfx = Mix_LoadWAV("assets/level_up.wav");
+    m_game_state.punch_sfx = Mix_LoadWAV("assets/punch.wav"); 
+
 }
 
 void LevelA::update(float delta_time)
@@ -114,6 +121,7 @@ void LevelA::update(float delta_time)
             //m_game_state.next_scene_id = 0;  // temp -> gonna change to taking a life later
             //return;  // Exit immediately after collision
             *lives -= 1;
+            Mix_PlayChannel(1, m_game_state.punch_sfx, 0);  // Play punch sound
             if (*lives == 0) {
                 m_game_state.next_scene_id = 4; // render lose scene
                 *lives = 3;
@@ -133,7 +141,10 @@ void LevelA::update(float delta_time)
     }
 
 
-    if (m_game_state.player->get_position().y < -10.0f) m_game_state.next_scene_id = 2;
+    if (m_game_state.player->get_position().y < -10.0f) {
+        m_game_state.next_scene_id = 2;
+        Mix_PlayChannel(-1, m_game_state.level_up_sfx, 0);  // Play level-up sound
+    }
 }
 
 void LevelA::render(ShaderProgram* program)
