@@ -86,6 +86,9 @@ public:
     void ai_walk();
     void ai_guard(Entity* player);
 
+    void const check_collision_with_enemies(Entity* enemies, int enemy_count);
+
+
     void normalise_movement() { m_movement = glm::normalize(m_movement); }
 
     void face_left() { m_animation_indices = m_walking[LEFT]; }

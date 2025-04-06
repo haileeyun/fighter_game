@@ -299,6 +299,20 @@ void const Entity::check_collision_x(Map* map)
         m_collided_right = true;
     }
 }
+
+void const Entity::check_collision_with_enemies(Entity* enemies, int enemy_count) {
+    for (int i = 0; i < enemy_count; i++) {
+        if (check_collision(&enemies[i])) {
+            // Handle collision from player's perspective
+            if (m_entity_type == PLAYER) {
+                m_collided_left = (m_velocity.x < 0);
+                m_collided_right = (m_velocity.x > 0);
+                return; // Return after first collision
+            }
+        }
+    }
+}
+
 void Entity::update(float delta_time, Entity* player, Entity* collidable_entities, int collidable_entity_count, Map* map)
 {
     if (!m_is_active) return;
@@ -340,13 +354,22 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     }
 
     m_position.y += m_velocity.y * delta_time;
-
-    check_collision_y(collidable_entities, collidable_entity_count);
-    check_collision_y(map);
-
     m_position.x += m_velocity.x * delta_time;
-    check_collision_x(collidable_entities, collidable_entity_count);
+
+    if (m_entity_type == PLAYER) {
+        // Player checks collisions with enemies
+        check_collision_with_enemies(collidable_entities, collidable_entity_count);
+    }
+    else {
+        // Enemies check collisions normally
+        check_collision_y(collidable_entities, collidable_entity_count);
+        check_collision_x(collidable_entities, collidable_entity_count);
+    }
+
+    // Always check map collisions
+    check_collision_y(map);
     check_collision_x(map);
+
 
     m_model_matrix = glm::mat4(1.0f);
     m_model_matrix = glm::translate(m_model_matrix, m_position);

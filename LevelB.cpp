@@ -71,7 +71,7 @@ void LevelB::initialise()
         PLAYER
     );
 
-    m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
+    m_game_state.player->set_position(glm::vec3(2.0f, 2.0f, 0.0f));
 
     // Jumping
     m_game_state.player->set_jumping_power(3.0f);
@@ -124,7 +124,7 @@ void LevelB::update(float delta_time)
                 *lives = 3;
                 return;
             }
-            m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
+            m_game_state.player->set_position(glm::vec3(2.0f, 2.0f, 0.0f));
             m_game_state.enemies[0].set_position(glm::vec3(8.0f, -3.0f, 0.0f));
             m_game_state.enemies[1].set_position(glm::vec3(12.0f, -3.0f, 0.0f));
 
