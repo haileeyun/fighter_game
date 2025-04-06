@@ -76,15 +76,15 @@ void LevelB::initialise()
     // Jumping
     m_game_state.player->set_jumping_power(3.0f);
 
-    /**
-    Enemies' stuff */
+    // ENEMY
+
     GLuint enemy_texture_id = Utility::load_texture(ENEMY_FILEPATH);
 
     m_game_state.enemies = new Entity[ENEMY_COUNT];
 
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
-        m_game_state.enemies[i] = Entity(enemy_texture_id, 1.0f, 1.0f, 1.0f, ENEMY, WALKER, IDLE);
+        m_game_state.enemies[i] = Entity(enemy_texture_id, 1.0f, 0.7f, 0.7f, ENEMY, WALKER, IDLE);
         m_game_state.enemies[i].set_movement(glm::vec3(0.0f));
         m_game_state.enemies[i].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     }
@@ -94,9 +94,6 @@ void LevelB::initialise()
     m_game_state.enemies[1].set_position(glm::vec3(12.0f, -3.0f, 0.0f));
 
     
-
-
-
     /**
      BGM and SFX
      */

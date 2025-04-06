@@ -5,7 +5,7 @@
 #include "glm/glm.hpp"
 #include "ShaderProgram.h"
 enum EntityType { PLATFORM, PLAYER, ENEMY };
-enum AIType { WALKER, GUARD };
+enum AIType { WALKER, GUARD, FLYER };
 enum AIState { WALKING, IDLE, ATTACKING };
 
 
@@ -85,6 +85,7 @@ public:
     void ai_activate(Entity* player);
     void ai_walk();
     void ai_guard(Entity* player);
+    void ai_fly();
 
     void const check_collision_with_enemies(Entity* enemies, int enemy_count);
 

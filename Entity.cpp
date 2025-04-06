@@ -28,6 +28,10 @@ void Entity::ai_activate(Entity* player)
         ai_guard(player);
         break;
 
+    case FLYER:
+        ai_fly();
+        break;
+
     default:
         break;
     }
@@ -60,6 +64,24 @@ void Entity::ai_guard(Entity* player)
     default:
         break;
     }
+}
+
+void Entity::ai_fly()
+{
+    // Define the left and right boundaries
+    static const float LEFT_BOUNDARY = 1.0f;
+    static const float RIGHT_BOUNDARY = 13.0f;
+
+    // Change direction when reaching boundaries
+    if (m_position.x <= LEFT_BOUNDARY) {
+        m_movement = glm::vec3(1.0f, 0.0f, 0.0f); // Move right
+    }
+    else if (m_position.x >= RIGHT_BOUNDARY) {
+        m_movement = glm::vec3(-1.0f, 0.0f, 0.0f); // Move left
+    }
+
+    // slight vertical movment
+    m_movement.y = sinf(SDL_GetTicks() / 100.0f) * 1.0f; // Gentle up/down motion
 }
 
 
@@ -344,8 +366,16 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
         }
     }
 
-    m_velocity.x = m_movement.x * m_speed;
-    m_velocity += m_acceleration * delta_time;
+    if (m_ai_type == FLYER) {
+        // For flyers, use movement directly without acceleration
+        m_velocity.x = m_movement.x * m_speed;
+        m_velocity.y = m_movement.y * m_speed;
+    }
+    else {
+        // Original movement code for other entities
+        m_velocity.x = m_movement.x * m_speed;
+        m_velocity += m_acceleration * delta_time;
+    }
 
     if (m_is_jumping)
     {

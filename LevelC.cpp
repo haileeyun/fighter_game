@@ -5,7 +5,7 @@
 #define LEVEL_HEIGHT 8
 
 constexpr char SPRITESHEET_FILEPATH[] = "assets/george_0.png",
-ENEMY_FILEPATH[] = "assets/soph.png";
+ENEMY_FILEPATH[] = "assets/black_cat.png";
 
 
 unsigned int LEVELC_DATA[] =
@@ -14,8 +14,8 @@ unsigned int LEVELC_DATA[] =
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
     3, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2
 };
@@ -26,6 +26,8 @@ LevelC::~LevelC()
     delete    m_game_state.player;
     delete    m_game_state.map;
     Mix_FreeChunk(m_game_state.jump_sfx);
+    Mix_FreeChunk(m_game_state.punch_sfx);
+
 }
 
 void LevelC::initialise()
@@ -35,11 +37,8 @@ void LevelC::initialise()
     GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
     m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELC_DATA, map_texture_id, 1.0f, 4, 1);
 
-    // Code from main.cpp's initialise()
-    /**
-     George's Stuff
-     */
-     // Existing
+    // PLAYER
+
     int player_walking_animation[4][4] =
     {
         { 1, 5, 9, 13 },  // for George to move to the left,
@@ -68,27 +67,29 @@ void LevelC::initialise()
         PLAYER
     );
 
-    m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
+    m_game_state.player->set_position(glm::vec3(2.0f, 2.0f, 0.0f));
 
     // Jumping
     m_game_state.player->set_jumping_power(3.0f);
 
-    /**
-    Enemies' stuff */
+    // ENEMY 
+
     GLuint enemy_texture_id = Utility::load_texture(ENEMY_FILEPATH);
 
     m_game_state.enemies = new Entity[ENEMY_COUNT];
 
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
-        m_game_state.enemies[i] = Entity(enemy_texture_id, 1.0f, 1.0f, 1.0f, ENEMY, GUARD, IDLE);
+        m_game_state.enemies[i] = Entity(enemy_texture_id, 1.0f, 0.7f, 0.7f, ENEMY, FLYER, IDLE);
+        m_game_state.enemies[i].set_movement(glm::vec3(-1.0f, 0.0f, 0.0f)); // Start moving left
+        m_game_state.enemies[i].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f)); // No gravity for flyers
+
+
     }
 
 
-    m_game_state.enemies[0].set_position(glm::vec3(8.0f, 0.0f, 0.0f));
-    m_game_state.enemies[0].set_movement(glm::vec3(0.0f));
-    m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
-
+    m_game_state.enemies[0].set_position(glm::vec3(5.0f, -3.0f, 0.0f));
+    
 
     /**
      BGM and SFX
@@ -96,11 +97,33 @@ void LevelC::initialise()
     
 
     m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
+    m_game_state.punch_sfx = Mix_LoadWAV("assets/punch.wav");
+
 }
 
 void LevelC::update(float delta_time)
 {
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
+
+    // Update enemies
+    for (int i = 0; i < ENEMY_COUNT; i++) {
+        m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
+
+        // Check for collision with player
+        if (m_game_state.player->check_collision(&m_game_state.enemies[i])) {
+            *lives -= 1;
+            if (*lives == 0) {
+                m_game_state.next_scene_id = 4; // render lose scene
+                *lives = 3;
+                return;
+            }
+            m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
+            m_game_state.enemies[0].set_position(glm::vec3(5.0f, 1.0f, 0.0f));
+            m_game_state.enemies[0].set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));
+
+
+        }
+    }
 
     if (m_game_state.player->get_position().y < -10.0f) m_game_state.next_scene_id = 5;
 }
@@ -109,6 +132,11 @@ void LevelC::render(ShaderProgram* program)
 {
     m_game_state.map->render(program);
     m_game_state.player->render(program);
+
+    // render enemies
+    for (int i = 0; i < ENEMY_COUNT; i++) {
+        m_game_state.enemies[i].render(program);
+    }
 
     if (lives != nullptr) {
         std::string lives_text = "Lives: " + std::to_string(*lives);
