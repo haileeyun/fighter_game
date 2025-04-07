@@ -82,7 +82,7 @@ void LevelA::initialise()
     m_game_state.player->set_player_state(PLAYER_IDLE);
 
 
-    m_game_state.player->set_position(glm::vec3(2.0f, 2.0f, 0.0f));
+    m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
 
 
     // ENEMIES
@@ -101,7 +101,7 @@ void LevelA::initialise()
     }
 
 
-    m_game_state.enemies[0].set_position(glm::vec3(7.0f, 5.0f, 0.0f));
+    m_game_state.enemies[0].set_position(glm::vec3(7.0f, 0.0f, 0.0f));
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     m_game_state.enemies[0].activate();
 
@@ -132,8 +132,8 @@ void LevelA::update(float delta_time)
                 *lives = 3;
                 return;
             }
-            m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
-            m_game_state.enemies[i].set_position(glm::vec3(7.0f, 5.0f, 0.0f));
+            m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
+            m_game_state.enemies[i].set_position(glm::vec3(7.0f, 0.0f, 0.0f));
 
 
         }
@@ -169,7 +169,7 @@ void LevelA::render(ShaderProgram* program)
 
     if (lives != nullptr) {
         std::string lives_text = "Lives: " + std::to_string(*lives);
-        Utility::draw_text(program, Utility::load_texture("assets/font1.png"),
+        Utility::draw_text(program, Utility::load_texture("assets/font_sheet2.png"),
             lives_text, 0.5f, 0.0f, glm::vec3(3.0f, -0.5f, 0.0f));
     }
 

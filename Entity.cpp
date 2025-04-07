@@ -85,7 +85,11 @@ void Entity::ai_fly()
 }
 
 void Entity::set_player_state(PlayerState state) {
+    // Don't change state if we're not the player
     if (m_entity_type != PLAYER) return;
+
+    // Only change if this is a new state
+    if (m_player_state == state) return;
 
     m_player_state = state;
     m_texture_id = m_state_textures[state];
@@ -93,12 +97,14 @@ void Entity::set_player_state(PlayerState state) {
     m_animation_cols = frames.x;
     m_animation_rows = frames.y;
     m_animation_frames = frames.x * frames.y;
-    m_animation_index = 0;
-    m_animation_time = 0.0f;
+    m_animation_index = 0;  // Reset animation index when changing state
+    m_animation_time = 0.0f;  // Reset animation time when changing state
 
-    // Set animation indices for the new state
+    // Re-initialize animation indices for the new state
     if (m_animation_indices) delete[] m_animation_indices;
     m_animation_indices = new int[m_animation_frames];
+
+    // Set up sequential animation indices
     for (int i = 0; i < m_animation_frames; i++) {
         m_animation_indices[i] = i;
     }
@@ -464,9 +470,8 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
 
     if (m_entity_type == ENEMY) ai_activate(player);
 
-    if (m_animation_indices != NULL)
+    if (m_animation_indices != NULL && m_animation_frames > 0)
     {
-        // Always update animation time, even if not moving (for idle animations)
         m_animation_time += delta_time;
         float frames_per_second = 1.0f / SECONDS_PER_FRAME;
 

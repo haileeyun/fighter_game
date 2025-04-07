@@ -4,8 +4,7 @@
 #define LEVEL_WIDTH 14
 #define LEVEL_HEIGHT 8
 
-constexpr char SPRITESHEET_FILEPATH[] = "assets/george_0.png",
-ENEMY_FILEPATH[] = "assets/black_cat.png";
+constexpr char ENEMY_FILEPATH[] = "assets/black_cat.png";
 
 
 unsigned int LEVELC_DATA[] =
@@ -56,8 +55,6 @@ void LevelC::initialise()
 
     glm::vec3 acceleration = glm::vec3(0.0f, -4.81f, 0.0f);
 
-    GLuint player_texture_id = Utility::load_texture(SPRITESHEET_FILEPATH);
-
 
     m_game_state.player = new Entity(
         idle_texture,
@@ -68,7 +65,7 @@ void LevelC::initialise()
         1.8f,
         PLAYER);
 
-    m_game_state.player->set_position(glm::vec3(2.0f, 2.0f, 0.0f));
+    m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
     m_game_state.player->set_scale(2.0f);
 
 
@@ -82,7 +79,7 @@ void LevelC::initialise()
     // Set initial state
     m_game_state.player->set_player_state(PLAYER_IDLE);
 
-    m_game_state.player->set_position(glm::vec3(2.0f, 2.0f, 0.0f));
+    m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
 
     // Jumping
     m_game_state.player->set_jumping_power(5.0f);
@@ -103,7 +100,7 @@ void LevelC::initialise()
     }
 
 
-    m_game_state.enemies[0].set_position(glm::vec3(5.0f, -3.0f, 0.0f));
+    m_game_state.enemies[0].set_position(glm::vec3(7.0f, -3.0f, 0.0f));
     
 
     /**
@@ -132,8 +129,8 @@ void LevelC::update(float delta_time)
                 *lives = 3;
                 return;
             }
-            m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
-            m_game_state.enemies[0].set_position(glm::vec3(5.0f, 1.0f, 0.0f));
+            m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
+            m_game_state.enemies[0].set_position(glm::vec3(7.0f, -3.0f, 0.0f));
             m_game_state.enemies[0].set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));
 
 
@@ -155,7 +152,7 @@ void LevelC::render(ShaderProgram* program)
 
     if (lives != nullptr) {
         std::string lives_text = "Lives: " + std::to_string(*lives);
-        Utility::draw_text(program, Utility::load_texture("assets/font1.png"),
+        Utility::draw_text(program, Utility::load_texture("assets/font_sheet2.png"),
             lives_text, 0.5f, 0.0f, glm::vec3(3.0f, -0.5f, 0.0f));
     }
 }

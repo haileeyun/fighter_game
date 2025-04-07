@@ -70,7 +70,7 @@ private:
 
 public:
     // STATIC VARIABLES  //
-    static constexpr float SECONDS_PER_FRAME = 10.0f; 
+    static constexpr int SECONDS_PER_FRAME = 8; 
 
 
     // METHODS  //

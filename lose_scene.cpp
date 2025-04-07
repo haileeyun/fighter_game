@@ -32,7 +32,7 @@ void LoseScene::render(ShaderProgram* program)
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Render text
-    Utility::draw_text(program, Utility::load_texture("assets/font1.png"),
+    Utility::draw_text(program, Utility::load_texture("assets/font_sheet2.png"),
         "You lost", 0.5f, 0.0f, glm::vec3(-1.5f, 0.5f, 0.0f));
     
 
