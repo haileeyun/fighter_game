@@ -4,19 +4,31 @@
 #include "Map.h"
 #include "glm/glm.hpp"
 #include "ShaderProgram.h"
+#include <unordered_map>
+
 enum EntityType { PLATFORM, PLAYER, ENEMY };
 enum AIType { WALKER, GUARD, FLYER };
 enum AIState { WALKING, IDLE, ATTACKING };
 
 
 enum AnimationDirection { LEFT, RIGHT, UP, DOWN };
+enum PlayerState {
+    PLAYER_IDLE,
+    RUNNING_LEFT,
+    RUNNING_RIGHT,
+    JUMPING,
+    FALLING
+};
 
 class Entity
 {
 private:
     bool m_is_active = true;
 
-    int m_walking[4][4]; // 4x4 array for walking animations
+
+    PlayerState m_player_state;
+    std::unordered_map<PlayerState, GLuint> m_state_textures;
+    std::unordered_map<PlayerState, glm::ivec2> m_state_frames; // x=cols, y=rows
 
 
     EntityType m_entity_type;
@@ -58,16 +70,25 @@ private:
 
 public:
     // STATIC VARIABLES  //
-    static constexpr int SECONDS_PER_FRAME = 4;
+    static constexpr float SECONDS_PER_FRAME = 10.0f; 
+
 
     // METHODS  //
     Entity();
-    Entity(GLuint texture_id, float speed, glm::vec3 acceleration, float jump_power, int walking[4][4], float animation_time,
-        int animation_frames, int animation_index, int animation_cols,
-        int animation_rows, float width, float height, EntityType EntityType);
+    
+    
+
+    Entity(GLuint texture_id, float speed, glm::vec3 acceleration,
+        float jump_power, float width, float height, EntityType EntityType);
+
     Entity(GLuint texture_id, float speed, float width, float height, EntityType EntityType); // Simpler constructor
+    
     Entity(GLuint texture_id, float speed, float width, float height, EntityType EntityType, AIType AIType, AIState AIState); // AI constructor
+    
     ~Entity();
+
+    void set_player_state(PlayerState state);
+    void add_state_texture(PlayerState state, GLuint texture_id, int cols, int rows);
 
     void draw_sprite_from_texture_atlas(ShaderProgram* program, GLuint texture_id, int index);
     bool const check_collision(Entity* other) const;
@@ -92,15 +113,11 @@ public:
 
     void normalise_movement() { m_movement = glm::normalize(m_movement); }
 
-    void face_left() { m_animation_indices = m_walking[LEFT]; }
-    void face_right() { m_animation_indices = m_walking[RIGHT]; }
-    void face_up() { m_animation_indices = m_walking[UP]; }
-    void face_down() { m_animation_indices = m_walking[DOWN]; }
-
-    void move_left() { m_movement.x = -1.0f; face_left(); }
-    void move_right() { m_movement.x = 1.0f;  face_right(); }
-    void move_up() { m_movement.y = 1.0f;  face_up(); }
-    void move_down() { m_movement.y = -1.0f; face_down(); }
+    
+    void move_left() { m_movement.x = -1.0f; }
+    void move_right() { m_movement.x = 1.0f; }
+    void move_up() { m_movement.y = 1.0f; }
+    void move_down() { m_movement.y = -1.0f; }
 
     void const jump() { m_is_jumping = true; }
 
@@ -142,18 +159,8 @@ public:
     void const set_jumping_power(float new_jumping_power) { m_jumping_power = new_jumping_power; }
     void const set_width(float new_width) { m_width = new_width; }
     void const set_height(float new_height) { m_height = new_height; }
+    void set_scale(float scale) { m_scale = glm::vec3(scale, scale, 1.0f); }
 
-    // Setter for m_walking
-    void set_walking(int walking[4][4])
-    {
-        for (int i = 0; i < 4; ++i)
-        {
-            for (int j = 0; j < 4; ++j)
-            {
-                m_walking[i][j] = walking[i][j];
-            }
-        }
-    }
 };
 
 #endif // ENTITY_H

@@ -84,20 +84,109 @@ void Entity::ai_fly()
     m_movement.y = sinf(SDL_GetTicks() / 100.0f) * 1.0f; // Gentle up/down motion
 }
 
+void Entity::set_player_state(PlayerState state) {
+    if (m_entity_type != PLAYER) return;
+
+    m_player_state = state;
+    m_texture_id = m_state_textures[state];
+    glm::ivec2 frames = m_state_frames[state];
+    m_animation_cols = frames.x;
+    m_animation_rows = frames.y;
+    m_animation_frames = frames.x * frames.y;
+    m_animation_index = 0;
+    m_animation_time = 0.0f;
+
+    // Set animation indices for the new state
+    if (m_animation_indices) delete[] m_animation_indices;
+    m_animation_indices = new int[m_animation_frames];
+    for (int i = 0; i < m_animation_frames; i++) {
+        m_animation_indices[i] = i;
+    }
+}
+
+void Entity::add_state_texture(PlayerState state, GLuint texture_id, int cols, int rows) {
+    m_state_textures[state] = texture_id;
+    m_state_frames[state] = glm::ivec2(cols, rows);
+
+    // Set initial texture if not set
+    if (m_state_textures.size() == 1) {
+        set_player_state(state);
+    }
+}
+
 
 // Default constructor
+Entity::Entity() :
+    m_position(0.0f), m_movement(0.0f),
+    m_scale(1.0f, 1.0f, 0.0f), m_model_matrix(1.0f),
+    m_speed(0.0f),
+    m_animation_cols(1), m_animation_frames(1), // Default to 1 frame
+    m_animation_index(0), m_animation_rows(1),
+    m_animation_indices(nullptr), m_animation_time(0.0f),
+    m_texture_id(0), m_velocity(0.0f),
+    m_acceleration(0.0f),
+    m_width(1.0f), m_height(1.0f),
+    m_player_state(PLAYER_IDLE) // Initialize player state
+{
+    // Initialize animation indices for single frame
+    m_animation_indices = new int[1] {0};
+}
+
+// Main constructor
+Entity::Entity(GLuint texture_id, float speed, glm::vec3 acceleration,
+    float jump_power, float width, float height, EntityType entityType) :
+    Entity() // Delegate to default constructor
+{
+    m_texture_id = texture_id;
+    m_speed = speed;
+    m_acceleration = acceleration;
+    m_jumping_power = jump_power;
+    m_width = width;
+    m_height = height;
+    m_entity_type = entityType;
+
+    // Initialize with single frame animation
+    m_animation_indices = new int[1] {0};
+    m_animation_cols = 1;
+    m_animation_rows = 1;
+    m_animation_frames = 1;
+}
+
+// Simpler constructor implementation
+Entity::Entity(GLuint texture_id, float speed, float width, float height, EntityType entityType) :
+    Entity() // Delegate to default constructor
+{
+    m_texture_id = texture_id;
+    m_speed = speed;
+    m_width = width;
+    m_height = height;
+    m_entity_type = entityType;
+
+    // Initialize with single frame animation
+    m_animation_indices = new int[1] {0};
+    m_animation_cols = 1;
+    m_animation_rows = 1;
+    m_animation_frames = 1;
+}
+
+// Keep other constructors but remove animation grid initialization
+// Default constructor
+/*
 Entity::Entity()
     : m_position(0.0f), m_movement(0.0f), m_scale(1.0f, 1.0f, 0.0f), m_model_matrix(1.0f),
     m_speed(0.0f), m_animation_cols(0), m_animation_frames(0), m_animation_index(0),
     m_animation_rows(0), m_animation_indices(nullptr), m_animation_time(0.0f),
     m_texture_id(0), m_velocity(0.0f), m_acceleration(0.0f), m_width(0.0f), m_height(0.0f)
-{
+{*/
     // Initialize m_walking with zeros or any default value
+    /*
     for (int i = 0; i < SECONDS_PER_FRAME; ++i)
-        for (int j = 0; j < SECONDS_PER_FRAME; ++j) m_walking[i][j] = 0;
+        for (int j = 0; j < SECONDS_PER_FRAME; ++j) m_walking[i][j] = 0; 
 }
+*/
 
 // Parameterized constructor
+/*
 Entity::Entity(GLuint texture_id, float speed, glm::vec3 acceleration, float jump_power, int walking[4][4], float animation_time,
     int animation_frames, int animation_index, int animation_cols,
     int animation_rows, float width, float height, EntityType EntityType)
@@ -111,8 +200,10 @@ Entity::Entity(GLuint texture_id, float speed, glm::vec3 acceleration, float jum
     face_right();
     set_walking(walking);
 }
+*/
 
 // Simpler constructor for partial initialization
+/*
 Entity::Entity(GLuint texture_id, float speed, float width, float height, EntityType EntityType)
     : m_position(0.0f), m_movement(0.0f), m_scale(1.0f, 1.0f, 0.0f), m_model_matrix(1.0f),
     m_speed(speed), m_animation_cols(0), m_animation_frames(0), m_animation_index(0),
@@ -123,15 +214,22 @@ Entity::Entity(GLuint texture_id, float speed, float width, float height, Entity
     for (int i = 0; i < SECONDS_PER_FRAME; ++i)
         for (int j = 0; j < SECONDS_PER_FRAME; ++j) m_walking[i][j] = 0;
 }
+*/
+
+
+
 Entity::Entity(GLuint texture_id, float speed, float width, float height, EntityType EntityType, AIType AIType, AIState AIState) : m_position(0.0f), m_movement(0.0f), m_scale(1.0f, 1.0f, 0.0f), m_model_matrix(1.0f),
 m_speed(speed), m_animation_cols(0), m_animation_frames(0), m_animation_index(0),
 m_animation_rows(0), m_animation_indices(nullptr), m_animation_time(0.0f),
 m_texture_id(texture_id), m_velocity(0.0f), m_acceleration(0.0f), m_width(width), m_height(height), m_entity_type(EntityType), m_ai_type(AIType), m_ai_state(AIState)
 {
     // Initialize m_walking with zeros or any default value
+    /*
     for (int i = 0; i < SECONDS_PER_FRAME; ++i)
         for (int j = 0; j < SECONDS_PER_FRAME; ++j) m_walking[i][j] = 0;
+    */
 }
+
 
 Entity::~Entity() { }
 
@@ -344,24 +442,42 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     m_collided_left = false;
     m_collided_right = false;
 
+    if (m_entity_type == PLAYER) {
+        if (m_velocity.y > 0.1f) {
+            set_player_state(JUMPING);
+        }
+        else if (m_velocity.y < -0.1f) {
+            set_player_state(FALLING);
+        }
+        else if (fabs(m_velocity.x) > 0.1f) {
+            if (m_velocity.x > 0) {
+                set_player_state(RUNNING_RIGHT);
+            }
+            else {
+                set_player_state(RUNNING_LEFT);
+            }
+        }
+        else {
+            set_player_state(PLAYER_IDLE);
+        }
+    }
+
     if (m_entity_type == ENEMY) ai_activate(player);
 
     if (m_animation_indices != NULL)
     {
-        if (glm::length(m_movement) != 0)
+        // Always update animation time, even if not moving (for idle animations)
+        m_animation_time += delta_time;
+        float frames_per_second = 1.0f / SECONDS_PER_FRAME;
+
+        if (m_animation_time >= frames_per_second)
         {
-            m_animation_time += delta_time;
-            float frames_per_second = (float)1 / SECONDS_PER_FRAME;
+            m_animation_time = 0.0f;
+            m_animation_index++;
 
-            if (m_animation_time >= frames_per_second)
+            if (m_animation_index >= m_animation_frames)
             {
-                m_animation_time = 0.0f;
-                m_animation_index++;
-
-                if (m_animation_index >= m_animation_frames)
-                {
-                    m_animation_index = 0;
-                }
+                m_animation_index = 0;
             }
         }
     }
@@ -403,33 +519,36 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
 
     m_model_matrix = glm::mat4(1.0f);
     m_model_matrix = glm::translate(m_model_matrix, m_position);
+    m_model_matrix = glm::scale(m_model_matrix, m_scale);  // Apply scaling
 }
 
 
 void Entity::render(ShaderProgram* program)
+
 {
+    
     program->set_model_matrix(m_model_matrix);
 
-    if (m_animation_indices != NULL)
-    {
+    if (m_animation_indices != NULL && m_animation_frames > 0) {
         draw_sprite_from_texture_atlas(program, m_texture_id, m_animation_indices[m_animation_index]);
-        return;
     }
+    else {
 
-    float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-    float tex_coords[] = { 0.0,  1.0, 1.0,  1.0, 1.0, 0.0,  0.0,  1.0, 1.0, 0.0,  0.0, 0.0 };
+        float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+        float tex_coords[] = { 0.0,  1.0, 1.0,  1.0, 1.0, 0.0,  0.0,  1.0, 1.0, 0.0,  0.0, 0.0 };
 
-    glBindTexture(GL_TEXTURE_2D, m_texture_id);
+        glBindTexture(GL_TEXTURE_2D, m_texture_id);
 
-    glVertexAttribPointer(program->get_position_attribute(), 2, GL_FLOAT, false, 0, vertices);
-    glEnableVertexAttribArray(program->get_position_attribute());
-    glVertexAttribPointer(program->get_tex_coordinate_attribute(), 2, GL_FLOAT, false, 0, tex_coords);
-    glEnableVertexAttribArray(program->get_tex_coordinate_attribute());
+        glVertexAttribPointer(program->get_position_attribute(), 2, GL_FLOAT, false, 0, vertices);
+        glEnableVertexAttribArray(program->get_position_attribute());
+        glVertexAttribPointer(program->get_tex_coordinate_attribute(), 2, GL_FLOAT, false, 0, tex_coords);
+        glEnableVertexAttribArray(program->get_tex_coordinate_attribute());
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    glDisableVertexAttribArray(program->get_position_attribute());
-    glDisableVertexAttribArray(program->get_tex_coordinate_attribute());
+        glDisableVertexAttribArray(program->get_position_attribute());
+        glDisableVertexAttribArray(program->get_tex_coordinate_attribute());
+    }
 
     //__debugbreak();
 }

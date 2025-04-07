@@ -2,11 +2,15 @@
 #include "Utility.h"
 #include "Entity.h"
 
+
 #define LEVEL_WIDTH 14
 #define LEVEL_HEIGHT 8
+#define LOG(argument) std::cout << argument << '\n'
+
 
 constexpr char SPRITESHEET_FILEPATH[] = "assets/george_0.png",
 ENEMY_FILEPATH[] = "assets/black_cat.png";
+
 
 
 unsigned int LEVELA_DATA[] =
@@ -47,35 +51,38 @@ void LevelA::initialise()
 
     // PLAYER CODE
 
-    int player_walking_animation[4][4] =
-    {
-        { 1, 5, 9, 13 },  // for George to move to the left,
-        { 3, 7, 11, 15 }, // for George to move to the right,
-        { 2, 6, 10, 14 }, // for George to move upwards,
-        { 0, 4, 8, 12 }   // for George to move downwards
-    };
+    GLuint idle_texture = Utility::load_texture("assets/idle.png");
+    GLuint run_left_texture = Utility::load_texture("assets/run_left.png");
+    GLuint run_right_texture = Utility::load_texture("assets/run_right.png");
+    GLuint jump_texture = Utility::load_texture("assets/jump.png");
+    GLuint fall_texture = Utility::load_texture("assets/fall.png");
 
     glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
-    GLuint player_texture_id = Utility::load_texture(SPRITESHEET_FILEPATH);
 
     m_game_state.player = new Entity(
-        player_texture_id,         // texture id
-        5.0f,                      // speed
-        acceleration,              // acceleration
-        5.0f,                      // jumping power
-        player_walking_animation,  // animation index sets
-        0.0f,                      // animation time
-        4,                         // animation frame amount
-        0,                         // current animation index
-        4,                         // animation column amount
-        4,                         // animation row amount
-        1.0f,                      // width
-        1.0f,                       // height
-        PLAYER
-    );
+        idle_texture,
+        5.0f,
+        glm::vec3(0.0f, -9.8f, 0.0f),
+        5.0f,
+        1.5f,
+        1.8f,
+        PLAYER);
+    
+    m_game_state.player->set_scale(2.0f);
 
-    m_game_state.player->set_position(glm::vec3(2.0f, 5.0f, 0.0f));
+    // Set up state textures
+    m_game_state.player->add_state_texture(PLAYER_IDLE, idle_texture, 4, 1);
+    m_game_state.player->add_state_texture(RUNNING_LEFT, run_left_texture, 8, 1);
+    m_game_state.player->add_state_texture(RUNNING_RIGHT, run_right_texture, 8, 1);
+    m_game_state.player->add_state_texture(JUMPING, jump_texture, 3, 1);
+    m_game_state.player->add_state_texture(FALLING, fall_texture, 2, 1);
+
+    // Set initial state
+    m_game_state.player->set_player_state(PLAYER_IDLE);
+
+
+    m_game_state.player->set_position(glm::vec3(2.0f, 2.0f, 0.0f));
 
 
     // ENEMIES
@@ -97,8 +104,6 @@ void LevelA::initialise()
     m_game_state.enemies[0].set_position(glm::vec3(7.0f, 5.0f, 0.0f));
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     m_game_state.enemies[0].activate();
-
-
 
 
     /**
