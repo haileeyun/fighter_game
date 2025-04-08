@@ -27,9 +27,7 @@ void WinScene::update(float delta_time)
 
 void WinScene::render(ShaderProgram* program)
 {
-    // Set a solid background color
-    glClearColor(0.2f, 0.2f, 0.8f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+   
 
     // Render text
     Utility::draw_text(program, Utility::load_texture("assets/font_sheet2.png"),

@@ -79,6 +79,8 @@ int lives;
 
 Mix_Music* g_bgm = nullptr;
 
+GLuint g_background_texture;
+glm::mat4 g_background_matrix;
 
 
 AppStatus g_app_status = RUNNING;
@@ -130,7 +132,10 @@ void initialise()
 
     glUseProgram(g_shader_program.get_program_id());
 
-    glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
+    //glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
+    g_background_texture = Utility::load_texture("assets/sky.png");
+    g_background_matrix = glm::mat4(1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // enable blending
     glEnable(GL_BLEND);
@@ -289,8 +294,30 @@ void render()
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // ————— RENDERING THE SCENE (i.e. map, character, enemies...) ————— //
+    g_shader_program.set_model_matrix(g_background_matrix);
+    glm::mat4 original_view_matrix = g_view_matrix;
+    g_shader_program.set_view_matrix(glm::mat4(1.0f));
+    float vertices[] = { -5.0, -3.75, 5.0, -3.75, 5.0, 3.75, -5.0, -3.75, 5.0, 3.75, -5.0, 3.75 };
+    float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+
+    glBindTexture(GL_TEXTURE_2D, g_background_texture);
+
+    glVertexAttribPointer(g_shader_program.get_position_attribute(), 2, GL_FLOAT, false, 0, vertices);
+    glEnableVertexAttribArray(g_shader_program.get_position_attribute());
+
+    glVertexAttribPointer(g_shader_program.get_tex_coordinate_attribute(), 2, GL_FLOAT, false, 0, texCoords);
+    glEnableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glDisableVertexAttribArray(g_shader_program.get_position_attribute());
+    glDisableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
+
+    // Restore the view matrix for the rest of the scene
+    g_shader_program.set_view_matrix(original_view_matrix);
+
     g_current_scene->render(&g_shader_program);
+
 
     g_effects->render();
 

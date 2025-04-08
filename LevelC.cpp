@@ -95,37 +95,34 @@ void LevelC::initialise()
     }
 
 
-    m_game_state.enemies[0].set_position(glm::vec3(7.0f, -3.0f, 0.0f));
+    m_game_state.enemies[0].set_position(glm::vec3(7.0f, -4.0f, 0.0f));
 
 
     // PLATFORMS
     GLuint platform_texture_id = Utility::load_texture("assets/floating_grass_tile.png");
 
-
-    // Create platform array
     m_platforms = new Entity[PLATFORM_COUNT];
     m_platform_movements = new float[PLATFORM_COUNT];
 
-    // Initialize platform positions and properties
     glm::vec3 platform_positions[PLATFORM_COUNT] = {
-        glm::vec3(5.0f, -5.0f, 0.0f),
-        glm::vec3(10.0f, -4.0f, 0.0f),
-        glm::vec3(15.0f, -5.0f, 0.0f)
+        glm::vec3(5.0f, -7.0f, 0.0f),
+        glm::vec3(10.0f, -6.0f, 0.0f),
+        glm::vec3(15.0f, -7.0f, 0.0f)
     };
 
     for (int i = 0; i < PLATFORM_COUNT; i++) {
         m_platforms[i] = Entity(
             platform_texture_id,
-            0.0f,           // speed (0 for static)
-            2.0f,           // width
-            2.0f,           // height
-            PLATFORM        // EntityType
+            0.0f,           
+            2.0f,           
+            2.0f,           
+            PLATFORM        
         );
 
         m_platforms[i].set_position(platform_positions[i]);
         m_platforms[i].set_scale(glm::vec3(2.0f, 2.0f, 1.0f));
 
-        // Initialize movement tracking for oscillation
+        // movement tracking for oscillation
         m_platform_movements[i] = 0.0f;
     }
 
@@ -133,7 +130,6 @@ void LevelC::initialise()
     /**
      BGM and SFX
      */
-
 
     m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
     m_game_state.punch_sfx = Mix_LoadWAV("assets/punch.wav");
@@ -200,7 +196,7 @@ void LevelC::update(float delta_time)
                 return;
             }
             m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
-            m_game_state.enemies[0].set_position(glm::vec3(7.0f, -3.0f, 0.0f));
+            m_game_state.enemies[0].set_position(glm::vec3(7.0f, -4.0f, 0.0f));
             m_game_state.enemies[0].set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));
 
 

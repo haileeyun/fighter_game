@@ -173,7 +173,6 @@ public:
     void set_collided_bottom(bool collided) { m_collided_bottom = collided; }
 
     
-
    
 
 };

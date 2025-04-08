@@ -464,15 +464,16 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
         // Player checks collisions with enemies
         check_collision_with_enemies(collidable_entities, collidable_entity_count);
     }
+    
     else {
         // Enemies check collisions normally
         check_collision_y(collidable_entities, collidable_entity_count);
         check_collision_x(collidable_entities, collidable_entity_count);
     }
 
-    // Always check map collisions
     check_collision_y(map);
     check_collision_x(map);
+    
 
 
     m_model_matrix = glm::mat4(1.0f);
