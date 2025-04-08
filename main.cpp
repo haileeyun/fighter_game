@@ -34,9 +34,9 @@
 constexpr int WINDOW_WIDTH = 640,
 WINDOW_HEIGHT = 480;
 
-constexpr float BG_RED = 0.1922f,
-BG_BLUE = 0.549f,
-BG_GREEN = 0.9059f,
+constexpr float BG_RED = 0.678f,
+BG_BLUE = 0.902f,
+BG_GREEN = 0.847f,
 BG_OPACITY = 1.0f;
 
 constexpr int VIEWPORT_X = 0,

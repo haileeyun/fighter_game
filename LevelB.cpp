@@ -4,8 +4,7 @@
 #define LEVEL_WIDTH 14
 #define LEVEL_HEIGHT 8
 
-constexpr char SPRITESHEET_FILEPATH[] = "assets/george_0.png",
-ENEMY_FILEPATH[] = "assets/black_cat.png";
+constexpr char ENEMY_FILEPATH[] = "assets/black_cat.png";
 
 unsigned int LEVELB_DATA[] =
 {
@@ -15,7 +14,7 @@ unsigned int LEVELB_DATA[] =
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
     3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
 };
 
@@ -35,8 +34,8 @@ void LevelB::initialise()
 {
     m_game_state.next_scene_id = -1;
 
-    GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
-    m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELB_DATA, map_texture_id, 1.0f, 4, 1);
+    GLuint map_texture_id = Utility::load_texture("assets/tiles.png");
+    m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELB_DATA, map_texture_id, 1.0f, 5, 1);
 
     // PLAYER
 
@@ -61,7 +60,7 @@ void LevelB::initialise()
     m_game_state.player->set_scale(2.0f);
 
 
-    
+
 
     // Set up state textures
     m_game_state.player->add_state_texture(PLAYER_IDLE, idle_texture, 4, 1);
@@ -93,11 +92,11 @@ void LevelB::initialise()
     m_game_state.enemies[0].set_position(glm::vec3(8.0f, -3.0f, 0.0f));
     m_game_state.enemies[1].set_position(glm::vec3(12.0f, -3.0f, 0.0f));
 
-    
+
     /**
      BGM and SFX
      */
-    
+
     m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
     m_game_state.level_up_sfx = Mix_LoadWAV("assets/level_up.wav");
     m_game_state.punch_sfx = Mix_LoadWAV("assets/punch.wav");

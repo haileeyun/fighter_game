@@ -4,7 +4,6 @@
 #define LEVEL_WIDTH 14
 #define LEVEL_HEIGHT 8
 
-constexpr char FONTSHEET_FILEPATH[] = "assets/font1.png";
 
 
 
@@ -16,7 +15,7 @@ void MenuScreen::initialise()
 {
     m_game_state.next_scene_id = -1;
 
-    GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
+    GLuint map_texture_id = Utility::load_texture("assets/tiles.png");
     
 }
 

@@ -8,8 +8,7 @@
 #define LOG(argument) std::cout << argument << '\n'
 
 
-constexpr char SPRITESHEET_FILEPATH[] = "assets/george_0.png",
-ENEMY_FILEPATH[] = "assets/black_cat.png";
+constexpr char ENEMY_FILEPATH[] = "assets/black_cat.png";
 
 
 
@@ -21,7 +20,7 @@ unsigned int LEVELA_DATA[] =
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
     3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
 };
 
@@ -31,8 +30,8 @@ LevelA::~LevelA()
     delete    m_game_state.player;
     delete    m_game_state.map;
     Mix_FreeChunk(m_game_state.jump_sfx);
-    Mix_FreeChunk(m_game_state.level_up_sfx);  
-    Mix_FreeChunk(m_game_state.punch_sfx); 
+    Mix_FreeChunk(m_game_state.level_up_sfx);
+    Mix_FreeChunk(m_game_state.punch_sfx);
 
 
 }
@@ -41,13 +40,13 @@ void LevelA::initialise()
 {
     m_game_state.next_scene_id = -1;
 
-    GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
-    m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELA_DATA, map_texture_id, 1.0f, 4, 1);
+    GLuint map_texture_id = Utility::load_texture("assets/tiles.png");
+    m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELA_DATA, map_texture_id, 1.0f, 5, 1);
 
     // extra platforms (not using Map class)
     GLuint floating_grass_texture_id = Utility::load_texture("assets/floating_grass_tile.png");
     m_platforms.push_back(new Platform(floating_grass_texture_id, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f, 0.5f));
-    
+
 
     // PLAYER CODE
 
@@ -68,7 +67,7 @@ void LevelA::initialise()
         1.5f,
         1.8f,
         PLAYER);
-    
+
     m_game_state.player->set_scale(2.0f);
 
     // Set up state textures
@@ -109,11 +108,11 @@ void LevelA::initialise()
     /**
      BGM and SFX
      */
-    
+
 
     m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
     m_game_state.level_up_sfx = Mix_LoadWAV("assets/level_up.wav");
-    m_game_state.punch_sfx = Mix_LoadWAV("assets/punch.wav"); 
+    m_game_state.punch_sfx = Mix_LoadWAV("assets/punch.wav");
 
 }
 

@@ -15,7 +15,7 @@ unsigned int LEVELC_DATA[] =
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+    3, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4,
     3, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2
 };
 
@@ -33,19 +33,10 @@ void LevelC::initialise()
 {
     m_game_state.next_scene_id = -1;
 
-    GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
-    m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELC_DATA, map_texture_id, 1.0f, 4, 1);
+    GLuint map_texture_id = Utility::load_texture("assets/tiles.png");
+    m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELC_DATA, map_texture_id, 1.0f, 5, 1);
 
     // PLAYER
-
-    /*int player_walking_animation[4][4] =
-    {
-        { 1, 5, 9, 13 },  // for George to move to the left,
-        { 3, 7, 11, 15 }, // for George to move to the right,
-        { 2, 6, 10, 14 }, // for George to move upwards,
-        { 0, 4, 8, 12 }   // for George to move downwards
-    };
-     */
 
     GLuint idle_texture = Utility::load_texture("assets/idle.png");
     GLuint run_left_texture = Utility::load_texture("assets/run_left.png");
@@ -101,12 +92,12 @@ void LevelC::initialise()
 
 
     m_game_state.enemies[0].set_position(glm::vec3(7.0f, -3.0f, 0.0f));
-    
+
 
     /**
      BGM and SFX
      */
-    
+
 
     m_game_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
     m_game_state.punch_sfx = Mix_LoadWAV("assets/punch.wav");
