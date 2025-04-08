@@ -68,6 +68,14 @@ private:
     bool m_collided_left = false;
     bool m_collided_right = false;
 
+    void update_model_matrix() {
+        m_model_matrix = glm::mat4(1.0f);
+        m_model_matrix = glm::translate(m_model_matrix, m_position);
+        m_model_matrix = glm::scale(m_model_matrix, m_scale);
+    }
+
+    
+
 public:
     // STATIC VARIABLES  //
     static constexpr int SECONDS_PER_FRAME = 8; 
@@ -137,6 +145,7 @@ public:
     bool      const get_collided_bottom() const { return m_collided_bottom; }
     bool      const get_collided_right() const { return m_collided_right; }
     bool      const get_collided_left() const { return m_collided_left; }
+    float get_height() const { return m_height; }
 
     void activate() { m_is_active = true; };
     void deactivate() { m_is_active = false; };
@@ -144,11 +153,12 @@ public:
     void const set_entity_type(EntityType new_entity_type) { m_entity_type = new_entity_type; };
     void const set_ai_type(AIType new_ai_type) { m_ai_type = new_ai_type; };
     void const set_ai_state(AIState new_state) { m_ai_state = new_state; };
-    void const set_position(glm::vec3 new_position) { m_position = new_position; }
+    void const set_position(glm::vec3 new_position) { m_position = new_position; update_model_matrix();
+    }
     void const set_velocity(glm::vec3 new_velocity) { m_velocity = new_velocity; }
     void const set_acceleration(glm::vec3 new_acceleration) { m_acceleration = new_acceleration; }
     void const set_movement(glm::vec3 new_movement) { m_movement = new_movement; }
-    void const set_scale(glm::vec3 new_scale) { m_scale = new_scale; }
+    void const set_scale(glm::vec3 new_scale) { m_scale = new_scale; update_model_matrix(); }
     void const set_texture_id(GLuint new_texture_id) { m_texture_id = new_texture_id; }
     void const set_speed(float new_speed) { m_speed = new_speed; }
     void const set_animation_cols(int new_cols) { m_animation_cols = new_cols; }
@@ -160,6 +170,11 @@ public:
     void const set_width(float new_width) { m_width = new_width; }
     void const set_height(float new_height) { m_height = new_height; }
     void set_scale(float scale) { m_scale = glm::vec3(scale, scale, 1.0f); }
+    void set_collided_bottom(bool collided) { m_collided_bottom = collided; }
+
+    
+
+   
 
 };
 

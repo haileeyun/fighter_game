@@ -16,6 +16,7 @@ public:
     void render(ShaderProgram* program) override;
 private:
 
-    std::vector<Platform*> m_platforms;
+    Entity* m_platform; 
+
 
 };

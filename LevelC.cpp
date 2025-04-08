@@ -5,6 +5,8 @@
 #define LEVEL_HEIGHT 8
 
 constexpr char ENEMY_FILEPATH[] = "assets/black_cat.png";
+const int PLATFORM_COUNT = 3;
+
 
 
 unsigned int LEVELC_DATA[] =
@@ -15,8 +17,8 @@ unsigned int LEVELC_DATA[] =
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4,
-    3, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2
+    3, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    3, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 LevelC::~LevelC()
@@ -24,6 +26,8 @@ LevelC::~LevelC()
     delete[] m_game_state.enemies;
     delete    m_game_state.player;
     delete    m_game_state.map;
+    delete[] m_platforms;  // Delete the platform array
+    delete[] m_platform_movements;  // Delete movement tracking array
     Mix_FreeChunk(m_game_state.jump_sfx);
     Mix_FreeChunk(m_game_state.punch_sfx);
 
@@ -94,6 +98,38 @@ void LevelC::initialise()
     m_game_state.enemies[0].set_position(glm::vec3(7.0f, -3.0f, 0.0f));
 
 
+    // PLATFORMS
+    GLuint platform_texture_id = Utility::load_texture("assets/floating_grass_tile.png");
+
+
+    // Create platform array
+    m_platforms = new Entity[PLATFORM_COUNT];
+    m_platform_movements = new float[PLATFORM_COUNT];
+
+    // Initialize platform positions and properties
+    glm::vec3 platform_positions[PLATFORM_COUNT] = {
+        glm::vec3(5.0f, -5.0f, 0.0f),
+        glm::vec3(10.0f, -4.0f, 0.0f),
+        glm::vec3(15.0f, -5.0f, 0.0f)
+    };
+
+    for (int i = 0; i < PLATFORM_COUNT; i++) {
+        m_platforms[i] = Entity(
+            platform_texture_id,
+            0.0f,           // speed (0 for static)
+            2.0f,           // width
+            2.0f,           // height
+            PLATFORM        // EntityType
+        );
+
+        m_platforms[i].set_position(platform_positions[i]);
+        m_platforms[i].set_scale(glm::vec3(2.0f, 2.0f, 1.0f));
+
+        // Initialize movement tracking for oscillation
+        m_platform_movements[i] = 0.0f;
+    }
+
+
     /**
      BGM and SFX
      */
@@ -107,6 +143,49 @@ void LevelC::initialise()
 void LevelC::update(float delta_time)
 {
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
+
+    for (int i = 0; i < PLATFORM_COUNT; i++) {
+        // Calculate vertical oscillation using sine wave
+        m_platform_movements[i] += delta_time;
+        float oscillation = sinf(m_platform_movements[i]) * 0.5f; // 0.5 is amplitude of movement
+
+        // Get current position
+        glm::vec3 current_position = m_platforms[i].get_position();
+
+        // Update position with oscillation
+        m_platforms[i].set_position(glm::vec3(
+            current_position.x,
+            current_position.y + oscillation * delta_time, // Apply oscillation to y-coordinate
+            current_position.z
+        ));
+
+        // Check for collision with player
+        if (m_game_state.player->check_collision(&m_platforms[i])) {
+            // Calculate penetration (how much the player is overlapping the platform)
+            float y_distance = fabs(m_game_state.player->get_position().y - m_platforms[i].get_position().y);
+            float y_overlap = fabs(y_distance - (m_game_state.player->get_height() / 2.0f) - (m_platforms[i].get_height() / 2.0f));
+
+            // Only resolve collision if player is above the platform
+            if (m_game_state.player->get_position().y > m_platforms[i].get_position().y) {
+                // Move player up by the overlap amount
+                m_game_state.player->set_position(glm::vec3(
+                    m_game_state.player->get_position().x,
+                    m_game_state.player->get_position().y + y_overlap,
+                    m_game_state.player->get_position().z
+                ));
+
+                // Stop downward velocity
+                m_game_state.player->set_velocity(glm::vec3(
+                    m_game_state.player->get_velocity().x,
+                    0.0f,
+                    m_game_state.player->get_velocity().z
+                ));
+
+                // Set collision flag
+                m_game_state.player->set_collided_bottom(true);
+            }
+        }
+    }
 
     // Update enemies
     for (int i = 0; i < ENEMY_COUNT; i++) {
@@ -139,6 +218,11 @@ void LevelC::render(ShaderProgram* program)
     // render enemies
     for (int i = 0; i < ENEMY_COUNT; i++) {
         m_game_state.enemies[i].render(program);
+    }
+
+    // Render platforms
+    for (int i = 0; i < PLATFORM_COUNT; i++) {
+        m_platforms[i].render(program);
     }
 
     if (lives != nullptr) {
