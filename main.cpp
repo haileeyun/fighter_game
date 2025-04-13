@@ -1,3 +1,13 @@
+/**
+* Author: Hailee Yun
+* Assignment: Final Project
+* Date due: 2025-04-22, 11:59pm
+* I pledge that I have completed this assignment without
+* collaborating with anyone else, in conformance with the
+* NYU School of Engineering Policies and Procedures on
+* Academic Misconduct.
+**/
+
 #define GL_SILENCE_DEPRECATION
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
@@ -208,7 +218,7 @@ void process_input()
                 g_app_status = TERMINATED;
                 break;
 
-            case SDLK_SPACE:
+            case SDLK_UP:
                 // Jump
                 if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene && g_current_scene != g_win_scene) {
                     if (g_current_scene->get_state().player->get_collided_bottom())
@@ -220,7 +230,12 @@ void process_input()
 
                 break;
 
-                // maybe the case goes here
+            case SDLK_x:
+                if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene && g_current_scene != g_win_scene) {
+                    g_current_scene->get_state().player->set_animation_state(STATE_ATTACKING);
+                }
+                break;
+
             case SDLK_RETURN:
                 if (g_current_scene == g_menu_screen) {
                     switch_to_scene(g_levelA);

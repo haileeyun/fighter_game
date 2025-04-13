@@ -7,17 +7,20 @@
 #include <unordered_map>
 
 enum EntityType { PLATFORM, PLAYER, ENEMY };
-enum AIType { WALKER, GUARD, FLYER };
-enum AIState { WALKING, IDLE, ATTACKING };
 
+enum AIType { WALKER, GUARD, FLYER, SHOOTER };
+//enum AIState { AI_WALKING, AI_IDLE, AI_ATTACKING, AI_HURT, AI_DEATH };
 
-enum AnimationDirection { LEFT, RIGHT, UP, DOWN };
-enum PlayerState {
-    PLAYER_IDLE,
-    RUNNING_LEFT,
-    RUNNING_RIGHT,
-    JUMPING,
-    FALLING
+enum AnimationState {
+    STATE_IDLE,
+    STATE_WALKING,
+    STATE_RUNNING_LEFT,
+    STATE_RUNNING_RIGHT,
+    STATE_JUMPING,
+    STATE_FALLING,
+    STATE_ATTACKING,
+    STATE_HURT,
+    STATE_DEATH
 };
 
 class Entity
@@ -25,15 +28,15 @@ class Entity
 private:
     bool m_is_active = true;
 
-
-    PlayerState m_player_state;
-    std::unordered_map<PlayerState, GLuint> m_state_textures;
-    std::unordered_map<PlayerState, glm::ivec2> m_state_frames; // x=cols, y=rows
-
-
     EntityType m_entity_type;
-    AIType     m_ai_type;
-    AIState    m_ai_state;
+    AIType m_ai_type;
+    //AIState m_ai_state;
+
+    AnimationState m_animation_state;
+    std::unordered_map<AnimationState, GLuint> m_state_textures;
+    std::unordered_map<AnimationState, glm::ivec2> m_state_frames;
+
+
     //  TRANSFORMATIONS  //
     glm::vec3 m_movement;
     glm::vec3 m_position;
@@ -62,6 +65,7 @@ private:
 
     float m_width = 1.0f,
         m_height = 1.0f;
+
     //  COLLISIONS //
     bool m_collided_top = false;
     bool m_collided_bottom = false;
@@ -91,12 +95,13 @@ public:
 
     Entity(GLuint texture_id, float speed, float width, float height, EntityType EntityType); // Simpler constructor
     
-    Entity(GLuint texture_id, float speed, float width, float height, EntityType EntityType, AIType AIType, AIState AIState); // AI constructor
+    Entity(GLuint texture_id, float speed, float width, float height, EntityType EntityType, AIType AIType, AnimationState AIState); // AI constructor
     
     ~Entity();
 
-    void set_player_state(PlayerState state);
-    void add_state_texture(PlayerState state, GLuint texture_id, int cols, int rows);
+    // animation methods
+    void set_animation_state(AnimationState state);
+    void add_animation_texture(AnimationState state, GLuint texture_id, int cols, int rows);
 
     void draw_sprite_from_texture_atlas(ShaderProgram* program, GLuint texture_id, int index);
     bool const check_collision(Entity* other) const;
@@ -132,7 +137,7 @@ public:
     // GETTERS  //
     EntityType const get_entity_type()    const { return m_entity_type; };
     AIType     const get_ai_type()        const { return m_ai_type; };
-    AIState    const get_ai_state()       const { return m_ai_state; };
+    //AIState    const get_ai_state()       const { return m_ai_state; };
     float const get_jumping_power() const { return m_jumping_power; }
     glm::vec3 const get_position()     const { return m_position; }
     glm::vec3 const get_velocity()     const { return m_velocity; }
@@ -152,7 +157,7 @@ public:
     //  SETTERS //
     void const set_entity_type(EntityType new_entity_type) { m_entity_type = new_entity_type; };
     void const set_ai_type(AIType new_ai_type) { m_ai_type = new_ai_type; };
-    void const set_ai_state(AIState new_state) { m_ai_state = new_state; };
+    //void const set_ai_state(AIState new_state) { m_ai_state = new_state; };
     void const set_position(glm::vec3 new_position) { m_position = new_position; update_model_matrix();
     }
     void const set_velocity(glm::vec3 new_velocity) { m_velocity = new_velocity; }

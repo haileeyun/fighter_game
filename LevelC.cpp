@@ -4,7 +4,7 @@
 #define LEVEL_WIDTH 14
 #define LEVEL_HEIGHT 8
 
-constexpr char ENEMY_FILEPATH[] = "assets/black_cat.png";
+//constexpr char ENEMY_FILEPATH[] = "assets/black_cat.png";
 const int PLATFORM_COUNT = 3;
 
 
@@ -23,7 +23,7 @@ unsigned int LEVELC_DATA[] =
 
 LevelC::~LevelC()
 {
-    delete[] m_game_state.enemies;
+    //delete[] m_game_state.enemies;
     delete    m_game_state.player;
     delete    m_game_state.map;
     delete[] m_platforms;  // Delete the platform array
@@ -65,14 +65,13 @@ void LevelC::initialise()
 
 
     // Set up state textures
-    m_game_state.player->add_state_texture(PLAYER_IDLE, idle_texture, 4, 1);
-    m_game_state.player->add_state_texture(RUNNING_LEFT, run_left_texture, 8, 1);
-    m_game_state.player->add_state_texture(RUNNING_RIGHT, run_right_texture, 8, 1);
-    m_game_state.player->add_state_texture(JUMPING, jump_texture, 3, 1);
-    m_game_state.player->add_state_texture(FALLING, fall_texture, 2, 1);
+    m_game_state.player->add_animation_texture(STATE_IDLE, idle_texture, 4, 1);
+    m_game_state.player->add_animation_texture(STATE_RUNNING_LEFT, run_left_texture, 8, 1);
+    m_game_state.player->add_animation_texture(STATE_RUNNING_RIGHT, run_right_texture, 8, 1);
+    m_game_state.player->add_animation_texture(STATE_JUMPING, jump_texture, 3, 1);
+    m_game_state.player->add_animation_texture(STATE_FALLING, fall_texture, 2, 1);
 
-    // Set initial state
-    m_game_state.player->set_player_state(PLAYER_IDLE);
+    m_game_state.player->set_animation_state(STATE_IDLE);
 
     m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
 
@@ -81,21 +80,21 @@ void LevelC::initialise()
 
     // ENEMY 
 
-    GLuint enemy_texture_id = Utility::load_texture(ENEMY_FILEPATH);
+    //GLuint enemy_texture_id = Utility::load_texture(ENEMY_FILEPATH);
 
-    m_game_state.enemies = new Entity[ENEMY_COUNT];
+    //m_game_state.enemies = new Entity[ENEMY_COUNT];
 
-    for (int i = 0; i < ENEMY_COUNT; i++)
-    {
-        m_game_state.enemies[i] = Entity(enemy_texture_id, 1.0f, 0.7f, 0.7f, ENEMY, FLYER, IDLE);
-        m_game_state.enemies[i].set_movement(glm::vec3(-1.0f, 0.0f, 0.0f)); // Start moving left
-        m_game_state.enemies[i].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f)); // No gravity for flyers
-
-
-    }
+    //for (int i = 0; i < ENEMY_COUNT; i++)
+    //{
+    //    m_game_state.enemies[i] = Entity(enemy_texture_id, 1.0f, 0.7f, 0.7f, ENEMY, FLYER, IDLE);
+    //    m_game_state.enemies[i].set_movement(glm::vec3(-1.0f, 0.0f, 0.0f)); // Start moving left
+    //    m_game_state.enemies[i].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f)); // No gravity for flyers
 
 
-    m_game_state.enemies[0].set_position(glm::vec3(7.0f, -4.0f, 0.0f));
+    //}
+
+
+    //m_game_state.enemies[0].set_position(glm::vec3(7.0f, -4.0f, 0.0f));
 
 
     // PLATFORMS
@@ -138,7 +137,9 @@ void LevelC::initialise()
 
 void LevelC::update(float delta_time)
 {
-    m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
+    //m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
+    // temp
+    m_game_state.player->update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
 
     for (int i = 0; i < PLATFORM_COUNT; i++) {
         // Calculate vertical oscillation using sine wave
@@ -183,25 +184,25 @@ void LevelC::update(float delta_time)
         }
     }
 
-    // Update enemies
-    for (int i = 0; i < ENEMY_COUNT; i++) {
-        m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
+    //// Update enemies
+    //for (int i = 0; i < ENEMY_COUNT; i++) {
+    //    m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
 
-        // Check for collision with player
-        if (m_game_state.player->check_collision(&m_game_state.enemies[i])) {
-            *lives -= 1;
-            if (*lives == 0) {
-                m_game_state.next_scene_id = 4; // render lose scene
-                *lives = 3;
-                return;
-            }
-            m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
-            m_game_state.enemies[0].set_position(glm::vec3(7.0f, -4.0f, 0.0f));
-            m_game_state.enemies[0].set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));
+    //    // Check for collision with player
+    //    if (m_game_state.player->check_collision(&m_game_state.enemies[i])) {
+    //        *lives -= 1;
+    //        if (*lives == 0) {
+    //            m_game_state.next_scene_id = 4; // render lose scene
+    //            *lives = 3;
+    //            return;
+    //        }
+    //        m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
+    //        m_game_state.enemies[0].set_position(glm::vec3(7.0f, -4.0f, 0.0f));
+    //        m_game_state.enemies[0].set_movement(glm::vec3(-1.0f, 0.0f, 0.0f));
 
 
-        }
-    }
+    //    }
+    //}
 
     if (m_game_state.player->get_position().y < -10.0f) m_game_state.next_scene_id = 5;
 }
@@ -211,10 +212,10 @@ void LevelC::render(ShaderProgram* program)
     m_game_state.map->render(program);
     m_game_state.player->render(program);
 
-    // render enemies
-    for (int i = 0; i < ENEMY_COUNT; i++) {
-        m_game_state.enemies[i].render(program);
-    }
+    //// render enemies
+    //for (int i = 0; i < ENEMY_COUNT; i++) {
+    //    m_game_state.enemies[i].render(program);
+    //}
 
     // Render platforms
     for (int i = 0; i < PLATFORM_COUNT; i++) {

@@ -17,6 +17,7 @@ public:
 private:
 
     Entity* m_platform; 
+    GLuint m_font_texture_id;
 
 
 };

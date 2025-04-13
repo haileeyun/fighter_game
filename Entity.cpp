@@ -44,24 +44,55 @@ void Entity::ai_walk()
 
 void Entity::ai_guard(Entity* player)
 {
-    switch (m_ai_state) {
-    case IDLE:
-        if (glm::distance(m_position, player->get_position()) < 3.0f) m_ai_state = WALKING;
+    switch (m_animation_state) {
+    case STATE_IDLE:
+        if (glm::distance(m_position, player->get_position()) < 3.0f) {
+            if (m_position.x > player->get_position().x) {
+                set_animation_state(STATE_RUNNING_LEFT);
+                m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
+            }
+            else {
+                set_animation_state(STATE_RUNNING_RIGHT);
+                m_movement = glm::vec3(1.0f, 0.0f, 0.0f);
+            }
+        }
         break;
 
-    case WALKING:
-        if (m_position.x > player->get_position().x) {
-            m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
+    case STATE_RUNNING_LEFT:
+    case STATE_RUNNING_RIGHT:
+        if (glm::distance(m_position, player->get_position()) < 3.0f) {
+            if (m_position.x > player->get_position().x) {
+                set_animation_state(STATE_RUNNING_LEFT);
+                m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
+            }
+            else {
+                set_animation_state(STATE_RUNNING_RIGHT);
+                m_movement = glm::vec3(1.0f, 0.0f, 0.0f);
+            }
         }
         else {
-            m_movement = glm::vec3(1.0f, 0.0f, 0.0f);
+            set_animation_state(STATE_IDLE);
+            m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
         }
         break;
 
-    case ATTACKING:
+    case STATE_ATTACKING:
+        // Keep current state until attack animation completes
+        if (m_animation_index >= m_animation_frames - 1) {
+            set_animation_state(STATE_IDLE);
+        }
+        break;
+
+    case STATE_HURT:
+    case STATE_DEATH:
+        // Keep these states until their animations complete
+        if (m_animation_index >= m_animation_frames - 1) {
+            set_animation_state(STATE_IDLE);
+        }
         break;
 
     default:
+        set_animation_state(STATE_IDLE);
         break;
     }
 }
@@ -84,39 +115,37 @@ void Entity::ai_fly()
     m_movement.y = sinf(SDL_GetTicks() / 100.0f) * 1.0f; // Gentle up/down motion
 }
 
-void Entity::set_player_state(PlayerState state) {
-    // Don't change state if we're not the player
-    if (m_entity_type != PLAYER) return;
+void Entity::add_animation_texture(AnimationState state, GLuint texture_id, int cols, int rows) {
+    m_state_textures[state] = texture_id;
+    m_state_frames[state] = glm::ivec2(cols, rows);
 
-    // Only change if this is a new state
-    if (m_player_state == state) return;
+    if (m_state_textures.size() == 1) {
+        set_animation_state(state);
+    }
+}
 
-    m_player_state = state;
+void Entity::set_animation_state(AnimationState state) {
+    if (m_animation_state == state) return;
+
+    m_animation_state = state;
+
+    if (m_state_textures.find(state) == m_state_textures.end()) {
+        return; 
+    }
+
     m_texture_id = m_state_textures[state];
     glm::ivec2 frames = m_state_frames[state];
     m_animation_cols = frames.x;
     m_animation_rows = frames.y;
     m_animation_frames = frames.x * frames.y;
-    m_animation_index = 0;  // Reset animation index when changing state
-    m_animation_time = 0.0f;  // Reset animation time when changing state
+    m_animation_index = 0;  
+    m_animation_time = 0.0f;  
 
-    // Re-initialize animation indices for the new state
     if (m_animation_indices) delete[] m_animation_indices;
     m_animation_indices = new int[m_animation_frames];
 
-    // Set up sequential animation indices
     for (int i = 0; i < m_animation_frames; i++) {
         m_animation_indices[i] = i;
-    }
-}
-
-void Entity::add_state_texture(PlayerState state, GLuint texture_id, int cols, int rows) {
-    m_state_textures[state] = texture_id;
-    m_state_frames[state] = glm::ivec2(cols, rows);
-
-    // Set initial texture if not set
-    if (m_state_textures.size() == 1) {
-        set_player_state(state);
     }
 }
 
@@ -132,7 +161,7 @@ Entity::Entity() :
     m_texture_id(0), m_velocity(0.0f),
     m_acceleration(0.0f),
     m_width(1.0f), m_height(1.0f),
-    m_player_state(PLAYER_IDLE) // Initialize player state
+    m_animation_state(STATE_IDLE) // Initialize player state
 {
     // Initialize animation indices for single frame
     m_animation_indices = new int[1] {0};
@@ -177,16 +206,12 @@ Entity::Entity(GLuint texture_id, float speed, float width, float height, Entity
 
 
 
-Entity::Entity(GLuint texture_id, float speed, float width, float height, EntityType EntityType, AIType AIType, AIState AIState) : m_position(0.0f), m_movement(0.0f), m_scale(1.0f, 1.0f, 0.0f), m_model_matrix(1.0f),
+Entity::Entity(GLuint texture_id, float speed, float width, float height, EntityType EntityType, AIType AIType, AnimationState AIState) : m_position(0.0f), m_movement(0.0f), m_scale(1.0f, 1.0f, 0.0f), m_model_matrix(1.0f),
 m_speed(speed), m_animation_cols(0), m_animation_frames(0), m_animation_index(0),
 m_animation_rows(0), m_animation_indices(nullptr), m_animation_time(0.0f),
-m_texture_id(texture_id), m_velocity(0.0f), m_acceleration(0.0f), m_width(width), m_height(height), m_entity_type(EntityType), m_ai_type(AIType), m_ai_state(AIState)
+m_texture_id(texture_id), m_velocity(0.0f), m_acceleration(0.0f), m_width(width), m_height(height), m_entity_type(EntityType), m_ai_type(AIType), m_animation_state(AIState)
 {
-    // Initialize m_walking with zeros or any default value
-    /*
-    for (int i = 0; i < SECONDS_PER_FRAME; ++i)
-        for (int j = 0; j < SECONDS_PER_FRAME; ++j) m_walking[i][j] = 0;
-    */
+    
 }
 
 
@@ -402,22 +427,51 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     m_collided_right = false;
 
     if (m_entity_type == PLAYER) {
-        if (m_velocity.y > 0.1f) {
-            set_player_state(JUMPING);
+        // handle player animation state based on movement
+        if (m_animation_state == STATE_ATTACKING) {
+            if (m_animation_index >= m_animation_frames - 1) {
+                set_animation_state(STATE_IDLE);
+            }
+        }
+        else if (m_velocity.y > 0.1f) {
+            set_animation_state(STATE_JUMPING);
         }
         else if (m_velocity.y < -0.1f) {
-            set_player_state(FALLING);
+            set_animation_state(STATE_FALLING);
         }
         else if (fabs(m_velocity.x) > 0.1f) {
             if (m_velocity.x > 0) {
-                set_player_state(RUNNING_RIGHT);
+                set_animation_state(STATE_RUNNING_RIGHT);
             }
             else {
-                set_player_state(RUNNING_LEFT);
+                set_animation_state(STATE_RUNNING_LEFT);
             }
         }
         else {
-            set_player_state(PLAYER_IDLE);
+            set_animation_state(STATE_IDLE);
+        }
+    }
+    else if (m_entity_type == ENEMY) {
+        ai_activate(player);
+
+        if (m_animation_state == STATE_ATTACKING) {
+            set_animation_state(STATE_ATTACKING);
+        }
+        else if (m_animation_state == STATE_HURT) {
+            set_animation_state(STATE_HURT);
+        }
+        else if (m_animation_state == STATE_DEATH) {
+            set_animation_state(STATE_DEATH);
+        }
+        if (m_movement.x < -0.1f) {
+            set_animation_state(STATE_RUNNING_LEFT);
+        }
+        else if (m_movement.x > 0.1f) {
+            set_animation_state(STATE_RUNNING_RIGHT);
+        }
+        else {
+            set_animation_state(STATE_IDLE);
+
         }
     }
 

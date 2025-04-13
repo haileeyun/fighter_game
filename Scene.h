@@ -16,9 +16,7 @@
 #include "Entity.h"
 #include "Map.h"
 
-/**
-    Notice that the game's state is now part of the Scene class, not the main file.
-*/
+
 struct GameState
 {
     // ————— GAME OBJECTS ————— //
@@ -27,13 +25,16 @@ struct GameState
     Entity* enemies;
 
     // ————— AUDIO ————— //
-    //Mix_Music* bgm; // should be global now
     Mix_Chunk* jump_sfx;
     Mix_Chunk* level_up_sfx;
     Mix_Chunk* punch_sfx;
 
     // ————— POINTERS TO OTHER SCENES ————— //
     int next_scene_id;
+
+    // local stats
+    int player_health;
+    int player_super;
 };
 
 class Scene {
