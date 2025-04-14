@@ -7,9 +7,14 @@
 #define LEVEL_HEIGHT 8
 #define LOG(argument) std::cout << argument << '\n'
 
+// CONSTANTS
+
+glm::vec3 INIT_PLAYER_POSITION = glm::vec3(4.0f, 0.0f, 0.0f);
+glm::vec3 INIT_ENEMY_POSITION = glm::vec3(6.0f, 0.0f, 0.0f);
+
+
 
 bool damage_applied = false;
-
 
 
 unsigned int LEVELA_DATA[] =
@@ -83,7 +88,7 @@ void LevelA::initialise()
     // Set initial state
     m_game_state.player->set_animation_state(STATE_IDLE);
 
-    m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
+    m_game_state.player->set_position(INIT_PLAYER_POSITION);
 
 
     // ENEMIES
@@ -116,7 +121,7 @@ void LevelA::initialise()
     m_game_state.enemies[0].update(0.01f, m_game_state.player, NULL, 0, m_game_state.map); // idkkk
 
 
-    m_game_state.enemies[0].set_position(glm::vec3(7.0f, 0.0f, 0.0f));
+    m_game_state.enemies[0].set_position(INIT_ENEMY_POSITION);
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     m_game_state.enemies[0].activate();
     m_game_state.enemies[0].set_scale(2.0f);
@@ -126,12 +131,12 @@ void LevelA::initialise()
 
     GLuint platform_texture_id = Utility::load_texture("assets/floating_grass_tile.png");
 
-    m_platform = new Entity(  // <- Use m_platform directly
-        platform_texture_id,  // texture_id
-        0.0f,                 // speed (0 for static)
-        2.0f,                 // width 
-        2.0f,                // height 
-        PLATFORM             // EntityType
+    m_platform = new Entity(  
+        platform_texture_id,  
+        0.0f,                 
+        2.0f,               
+        2.0f,                 
+        PLATFORM             
     );
     m_platform->set_position(glm::vec3(16.0f, -5.0f, 0.0f));
     m_platform->set_scale(glm::vec3(2.0f, 2.0f, 1.0f)); 
@@ -252,8 +257,8 @@ void LevelA::update(float delta_time)
                         }
 
                         // Reset positions after losing health
-                        m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
-                        m_game_state.enemies[i].set_position(glm::vec3(7.0f, 0.0f, 0.0f));
+                        m_game_state.player->set_position(INIT_PLAYER_POSITION);
+                        m_game_state.enemies[i].set_position(INIT_ENEMY_POSITION);
                     }
                 }
             }
