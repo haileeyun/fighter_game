@@ -1,5 +1,4 @@
 #include "Scene.h"
-#include "Platform.h"
 
 
 class LevelA : public Scene {
@@ -18,7 +17,6 @@ public:
     void render(ShaderProgram* program) override;
 private:
 
-    Entity* m_platform; 
     GLuint m_font_texture_id;
 
 

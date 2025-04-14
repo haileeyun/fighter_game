@@ -4,7 +4,7 @@
 #define LEVEL_WIDTH 14
 #define LEVEL_HEIGHT 8
 
-constexpr char FONTSHEET_FILEPATH[] = "assets/font1.png";
+constexpr char FONTSHEET_FILEPATH[] = "assets/white_font_sheet.png";
 
 
 
@@ -30,7 +30,7 @@ void LoseScene::render(ShaderProgram* program)
 
 
     // Render text
-    Utility::draw_text(program, Utility::load_texture("assets/font_sheet2.png"),
+    Utility::draw_text(program, Utility::load_texture("assets/wihte_font_sheet.png"),
         "You lost", 0.5f, 0.0f, glm::vec3(-1.5f, 0.5f, 0.0f));
     
 

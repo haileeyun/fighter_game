@@ -96,8 +96,6 @@ GLuint g_background_texture;
 glm::mat4 g_background_matrix;
 
 
-
-
 AppStatus g_app_status = RUNNING;
 
 void swtich_to_scene(Scene* scene);
@@ -123,7 +121,7 @@ void switch_to_scene(Scene* scene)
 void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    g_display_window = SDL_CreateWindow("rise_of_the_ai",
+    g_display_window = SDL_CreateWindow("final project",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL);
@@ -361,9 +359,17 @@ void update()
         }*/
 
         // Scene transitions
-        if (g_current_scene == g_levelA && g_current_scene->get_state().player->get_position().y < -10.0f) switch_to_scene(g_levelB);
-        if (g_current_scene == g_levelB && g_current_scene->get_state().player->get_position().y < -10.0f) switch_to_scene(g_levelC);
+        
+        //if (g_current_scene == g_levelA && g_current_scene->get_state().enemies[0].get_health() <= 0) switch_to_scene(g_levelB);
+        //if (g_current_scene == g_levelB && g_current_scene->get_state().enemies[0].get_health() <= 0) switch_to_scene(g_levelB);
+
+        //if (g_current_scene == g_levelB && g_current_scene->get_state().player->get_position().y < -10.0f) switch_to_scene(g_levelC);
+        if (g_current_scene->get_state().next_scene_id >= 0) {
+            switch_to_scene(g_levels[g_current_scene->get_state().next_scene_id]);
+            return;  // Important to return immediately after scene switch
+        }
     }
+
 
 }
 

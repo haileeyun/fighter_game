@@ -9,12 +9,12 @@
 
 // CONSTANTS
 
-glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
-glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
+static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
+static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
 
 
 
-bool damage_applied = false;
+static bool damage_applied = false;
 
 
 unsigned int LEVELA_DATA[] =
@@ -35,12 +35,9 @@ LevelA::~LevelA()
     delete[] m_game_state.enemies;
     delete    m_game_state.player;
     delete    m_game_state.map;
-    delete m_platform; 
     Mix_FreeChunk(m_game_state.jump_sfx);
     Mix_FreeChunk(m_game_state.level_up_sfx);
     Mix_FreeChunk(m_game_state.punch_sfx);
-
-
 }
 
 void LevelA::initialise()
@@ -128,21 +125,6 @@ void LevelA::initialise()
     m_game_state.enemies[0].set_scale(2.0f);
 
 
-    // PLATFORM
-
-    GLuint platform_texture_id = Utility::load_texture("assets/floating_grass_tile.png");
-
-    m_platform = new Entity(  
-        platform_texture_id,  
-        0.0f,                 
-        2.0f,               
-        2.0f,                 
-        PLATFORM             
-    );
-    m_platform->set_position(glm::vec3(16.0f, -5.0f, 0.0f));
-    m_platform->set_scale(glm::vec3(2.0f, 2.0f, 1.0f)); 
-
-
     /**
      BGM and SFX
      */
@@ -157,30 +139,7 @@ void LevelA::update(float delta_time)
 {
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
 
-    // platform collision
-    if (m_game_state.player->check_collision(m_platform))
-    {
-        float y_distance = fabs(m_game_state.player->get_position().y - m_platform->get_position().y);
-        float y_overlap = fabs(y_distance - (m_game_state.player->get_height() / 2.0f) - (m_platform->get_height() / 2.0f));
-
-        if (m_game_state.player->get_position().y > m_platform->get_position().y)
-        {
-            m_game_state.player->set_position(glm::vec3(
-                m_game_state.player->get_position().x,
-                m_game_state.player->get_position().y + y_overlap,
-                m_game_state.player->get_position().z
-            ));
-
-            m_game_state.player->set_velocity(glm::vec3(
-                m_game_state.player->get_velocity().x,
-                0.0f,
-                m_game_state.player->get_velocity().z
-            ));
-
-            m_game_state.player->set_collided_bottom(true);
-        }
-    }
-
+  
     // cooldown so the enemy doesn't spam attack me    
     enemy_attack_cooldown -= delta_time;
 
@@ -266,11 +225,6 @@ void LevelA::update(float delta_time)
         }
     }
 
-    
-    
-   
-    m_platform->set_position(glm::vec3(16.0f, -5.0f, 0.0f));
-
 }
 
 void LevelA::render(ShaderProgram* program)
@@ -284,7 +238,6 @@ void LevelA::render(ShaderProgram* program)
         m_game_state.enemies[i].render(program);
     }
 
-    m_platform->render(program);
 
 
     /*if (lives != nullptr) {
