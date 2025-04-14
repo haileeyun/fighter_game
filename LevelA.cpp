@@ -3,14 +3,14 @@
 #include "Entity.h"
 
 
-#define LEVEL_WIDTH 14
-#define LEVEL_HEIGHT 8
+#define LEVEL_WIDTH 15
+#define LEVEL_HEIGHT 9
 #define LOG(argument) std::cout << argument << '\n'
 
 // CONSTANTS
 
-glm::vec3 INIT_PLAYER_POSITION = glm::vec3(4.0f, 0.0f, 0.0f);
-glm::vec3 INIT_ENEMY_POSITION = glm::vec3(6.0f, 0.0f, 0.0f);
+glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
+glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
 
 
 
@@ -19,14 +19,15 @@ bool damage_applied = false;
 
 unsigned int LEVELA_DATA[] =
 {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-    0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0,
+    0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 LevelA::~LevelA()

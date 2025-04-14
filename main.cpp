@@ -41,8 +41,8 @@
 #include "Effects.h"
 
 // ––––– CONSTANTS ––––– //
-constexpr int WINDOW_WIDTH = 640,
-WINDOW_HEIGHT = 480;
+constexpr int WINDOW_WIDTH = 960,
+WINDOW_HEIGHT = 720;
 
 constexpr float BG_RED = 0.678f,
 BG_BLUE = 0.902f,
@@ -70,6 +70,9 @@ MenuScreen* g_menu_screen;
 LoseScene* g_lose_scene;
 WinScene* g_win_scene;
 
+
+glm::vec3 g_camera_position = glm::vec3(0.0f);
+float g_camera_zoom = 1.0f;
 
 Effects* g_effects;
 Scene* g_levels[6]; 
@@ -292,13 +295,68 @@ void update()
     g_view_matrix = glm::mat4(1.0f);
 
     if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene && g_current_scene != g_win_scene) {
+        
+        glm::vec3 player_position = g_current_scene->get_state().player->get_position();
+        bool has_active_enemies = false;
+        glm::vec3 enemy_position(0.0f);
+        // check for enemy
+        if (g_current_scene->get_state().enemies[0].get_health() > 0) {
+            enemy_position = g_current_scene->get_state().enemies[0].get_position();
+            has_active_enemies = true;
+        }
+        if (has_active_enemies) {
+            // Calculate midpoint between player and enemy
+            glm::vec3 midpoint = (player_position + enemy_position) * 0.5f;
+
+            // Calculate distance between fighters
+            float distance = glm::distance(player_position, enemy_position);
+
+            // Base zoom level - smaller value = more zoomed out
+            float base_zoom = 0.5f;
+
+            // Calculate dynamic zoom factor based on distance
+            // The max function ensures we don't zoom in too close
+            // The min function ensures we don't zoom out too far
+            float zoom_factor = glm::clamp(8.0f / (distance + 4.0f), 0.3f, 1.0f); // need to check with cruz if i can use clamp
+
+
+
+            // Apply zoom and center on midpoint
+            //g_view_matrix = glm::scale(g_view_matrix, glm::vec3(zoom_factor, zoom_factor, 1.0f));
+            //g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-midpoint.x, 3.75f, 0.0f));
+
+
+            // Then modify the camera code to smoothly transition:
+            glm::vec3 target_position = glm::vec3(-midpoint.x, 3.75f, 0.0f);
+            float target_zoom = glm::clamp(8.0f / (distance + 4.0f), 0.3f, 1.0f);
+
+            // Smooth lerp to target values
+            g_camera_position = g_camera_position + (target_position - g_camera_position) * 0.1f;
+            g_camera_zoom = g_camera_zoom + (target_zoom - g_camera_zoom) * 0.05f;
+
+            // Apply smoothed values
+            g_view_matrix = glm::scale(g_view_matrix, glm::vec3(g_camera_zoom, g_camera_zoom, 1.0f));
+            g_view_matrix = glm::translate(g_view_matrix, g_camera_position);
+
+        }
+        else {
+            // Default camera behavior (follow player)
+            if (player_position.x > LEVEL1_LEFT_EDGE) {
+                g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-player_position.x, 3.75, 0));
+            }
+            else {
+                g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-5, 3.75, 0));
+            }
+        }
+
+
         // Only adjust view for game levels
-        if (g_current_scene->get_state().player->get_position().x > LEVEL1_LEFT_EDGE) {
+        /*if (g_current_scene->get_state().player->get_position().x > LEVEL1_LEFT_EDGE) {
             g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-g_current_scene->get_state().player->get_position().x, 3.75, 0));
         }
         else {
             g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-5, 3.75, 0));
-        }
+        }*/
 
         // Scene transitions
         if (g_current_scene == g_levelA && g_current_scene->get_state().player->get_position().y < -10.0f) switch_to_scene(g_levelB);

@@ -160,6 +160,7 @@ public:
     AnimationState get_animation_state() { return m_animation_state; }
     int get_animation_frames() { return m_animation_frames; }
     int get_animation_index() { return m_animation_index;  }
+    
 
     void activate() { m_is_active = true; };
     void deactivate() { m_is_active = false; };
