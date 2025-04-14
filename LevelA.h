@@ -6,6 +6,8 @@ class LevelA : public Scene {
 public:
     // ————— STATIC ATTRIBUTES ————— //
     int ENEMY_COUNT = 1;
+    float enemy_attack_cooldown = 0.0f;
+
 
     // ————— DESTRUCTOR ————— //
     ~LevelA();

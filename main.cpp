@@ -232,7 +232,11 @@ void process_input()
 
             case SDLK_x:
                 if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene && g_current_scene != g_win_scene) {
-                    g_current_scene->get_state().player->set_animation_state(STATE_ATTACKING);
+                    //g_current_scene->get_state().player->set_animation_state(STATE_ATTACKING);
+                    if (g_current_scene->get_state().player->get_animation_state() != STATE_ATTACKING) {
+                        g_current_scene->get_state().player->set_animation_state(STATE_ATTACKING);
+                        g_current_scene->get_state().player->start_attack();
+                    }
                 }
                 break;
 

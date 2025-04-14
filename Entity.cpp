@@ -42,61 +42,39 @@ void Entity::ai_walk()
     m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
 }
 
-void Entity::ai_guard(Entity* player)
-{
-    switch (m_animation_state) {
-    case STATE_IDLE:
-        if (glm::distance(m_position, player->get_position()) < 3.0f) {
-            if (m_position.x > player->get_position().x) {
-                set_animation_state(STATE_RUNNING_LEFT);
-                m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
-            }
-            else {
-                set_animation_state(STATE_RUNNING_RIGHT);
-                m_movement = glm::vec3(1.0f, 0.0f, 0.0f);
-            }
-        }
-        break;
+void Entity::ai_guard(Entity* player) {
+    // Don't change behavior if in a special animation state
+    if (m_animation_state == STATE_ATTACKING ||
+        m_animation_state == STATE_HURT ||
+        m_animation_state == STATE_DEATH) {
+        m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+        return;
+    }
 
-    case STATE_RUNNING_LEFT:
-    case STATE_RUNNING_RIGHT:
-        if (glm::distance(m_position, player->get_position()) < 3.0f) {
-            if (m_position.x > player->get_position().x) {
-                set_animation_state(STATE_RUNNING_LEFT);
-                m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
-            }
-            else {
-                set_animation_state(STATE_RUNNING_RIGHT);
-                m_movement = glm::vec3(1.0f, 0.0f, 0.0f);
-            }
-        }
-        else {
-            set_animation_state(STATE_IDLE);
+    float distance = glm::distance(m_position, player->get_position());
+
+    // follow player if within certain range
+    if (distance < 7.0f) {
+        // if close, prepare to attack
+        if (distance < 1.5f) {
             m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
         }
-        break;
-
-    case STATE_ATTACKING:
-        // Keep current state until attack animation completes
-        if (m_animation_index >= m_animation_frames - 1) {
-            set_animation_state(STATE_IDLE);
+        else {
+            // Continue following player
+            if (m_position.x > player->get_position().x) {
+                m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
+            }
+            else {
+                m_movement = glm::vec3(1.0f, 0.0f, 0.0f);
+            }
         }
-        break;
-
-    case STATE_HURT:
-    case STATE_DEATH:
-        // Keep these states until their animations complete
-        if (m_animation_index >= m_animation_frames - 1) {
-            set_animation_state(STATE_IDLE);
-        }
-        break;
-
-    default:
-        set_animation_state(STATE_IDLE);
-        break;
+    }
+    else {
+        m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
     }
 }
 
+// probably delete this later
 void Entity::ai_fly()
 {
     // Define the left and right boundaries
@@ -407,14 +385,25 @@ void const Entity::check_collision_x(Map* map)
 void const Entity::check_collision_with_enemies(Entity* enemies, int enemy_count) {
     for (int i = 0; i < enemy_count; i++) {
         if (check_collision(&enemies[i])) {
-            // Handle collision from player's perspective
+            // handle collision from player's perspective
             if (m_entity_type == PLAYER) {
                 m_collided_left = (m_velocity.x < 0);
                 m_collided_right = (m_velocity.x > 0);
-                return; // Return after first collision
+                return; // return after first collision
             }
         }
     }
+}
+
+
+bool Entity::check_attack_collision(Entity* other) const {
+    // attack range can be slightly larger than regular collision
+    float attack_range = 1.5f; 
+
+    float x_distance = fabs(m_position.x - other->m_position.x) - ((m_width * attack_range + other->m_width) / 2.0f);
+    float y_distance = fabs(m_position.y - other->m_position.y) - ((m_height + other->m_height) / 2.0f);
+
+    return x_distance < 0.0f && y_distance < 0.0f;
 }
 
 void Entity::update(float delta_time, Entity* player, Entity* collidable_entities, int collidable_entity_count, Map* map)
@@ -429,8 +418,11 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     if (m_entity_type == PLAYER) {
         // handle player animation state based on movement
         if (m_animation_state == STATE_ATTACKING) {
+            m_is_attacking = true;
+            // reached end of attack animation
             if (m_animation_index >= m_animation_frames - 1) {
                 set_animation_state(STATE_IDLE);
+                m_is_attacking = false;
             }
         }
         else if (m_velocity.y > 0.1f) {
@@ -452,31 +444,31 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
         }
     }
     else if (m_entity_type == ENEMY) {
-        ai_activate(player);
+        // Only call AI if not in a special state
+        if (m_animation_state != STATE_ATTACKING &&
+            m_animation_state != STATE_HURT &&
+            m_animation_state != STATE_DEATH) {
+            ai_activate(player);
 
-        if (m_animation_state == STATE_ATTACKING) {
-            set_animation_state(STATE_ATTACKING);
+            // Set movement animations only if not in a special state
+            if (m_movement.x < -0.1f) {
+                set_animation_state(STATE_RUNNING_LEFT);
+            }
+            else if (m_movement.x > 0.1f) {
+                set_animation_state(STATE_RUNNING_RIGHT);
+            }
+            else {
+                set_animation_state(STATE_IDLE);
+            }
         }
-        else if (m_animation_state == STATE_HURT) {
-            set_animation_state(STATE_HURT);
-        }
-        else if (m_animation_state == STATE_DEATH) {
-            set_animation_state(STATE_DEATH);
-        }
-        if (m_movement.x < -0.1f) {
-            set_animation_state(STATE_RUNNING_LEFT);
-        }
-        else if (m_movement.x > 0.1f) {
-            set_animation_state(STATE_RUNNING_RIGHT);
-        }
-        else {
+        // Check if special animations have completed
+        else if ((m_animation_state == STATE_ATTACKING || m_animation_state == STATE_HURT) &&
+            m_animation_index >= m_animation_frames - 1) {
             set_animation_state(STATE_IDLE);
-
         }
     }
 
-    if (m_entity_type == ENEMY) ai_activate(player);
-
+    // Animation frame update
     if (m_animation_indices != NULL && m_animation_frames > 0)
     {
         m_animation_time += delta_time;
@@ -489,10 +481,17 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
 
             if (m_animation_index >= m_animation_frames)
             {
-                m_animation_index = 0;
+                // Only reset for looping animations
+                if (m_animation_state != STATE_DEATH) {
+                    m_animation_index = 0;
+                }
+                else {
+                    m_animation_index = m_animation_frames - 1; // Stay on last frame for death
+                }
             }
         }
     }
+
 
     if (m_ai_type == FLYER) {
         // For flyers, use movement directly without acceleration

@@ -8,7 +8,7 @@
 #define LOG(argument) std::cout << argument << '\n'
 
 
-constexpr char ENEMY_FILEPATH[] = "assets/black_cat.png";
+bool damage_applied = false;
 
 
 
@@ -85,10 +85,6 @@ void LevelA::initialise()
 
     m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
 
-    // initialize player stats
-    m_game_state.player_health = 100;
-    m_game_state.player_super = 50;
-
 
     // ENEMIES
 
@@ -105,6 +101,7 @@ void LevelA::initialise()
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
         m_game_state.enemies[i] = Entity(enemy_idle_texture, 1.0f, 0.5f, 1.7f, ENEMY, GUARD, STATE_IDLE);
+        m_game_state.enemies[i].set_health(100); // Set initial health
     }
 
     m_game_state.enemies[0].add_animation_texture(STATE_IDLE, enemy_idle_texture, 7, 1);
@@ -157,6 +154,7 @@ void LevelA::update(float delta_time)
 {
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
 
+    // platform collision
     if (m_game_state.player->check_collision(m_platform))
     {
         float y_distance = fabs(m_game_state.player->get_position().y - m_platform->get_position().y);
@@ -180,34 +178,96 @@ void LevelA::update(float delta_time)
         }
     }
 
+    // cooldown so the enemy doesn't spam attack me    
+    enemy_attack_cooldown -= delta_time;
+
+
     for (int i = 0; i < ENEMY_COUNT; i++) {
-        if (m_game_state.player->check_collision(&m_game_state.enemies[i])) {
-        
-            *lives -= 1;
-            Mix_PlayChannel(1, m_game_state.punch_sfx, 0);  // Play punch sound
-            if (*lives == 0) {
-                m_game_state.next_scene_id = 4; // render lose scene
-                *lives = 3;
+        // Check if enemy is still active/alive
+        if (m_game_state.enemies[i].get_health() <= 0) {
+            m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
+
+            // If enemy is dead but not in death animation yet
+            if (m_game_state.enemies[i].get_animation_state() != STATE_DEATH) {
+                m_game_state.enemies[i].set_animation_state(STATE_DEATH);
+                m_game_state.enemies[i].set_movement(glm::vec3(0.0f)); // Stop movement
+            }
+            // If death animation is finished, move to next level
+            if (m_game_state.enemies[i].get_animation_index() >= m_game_state.enemies[i].get_animation_frames() - 1) {
+                m_game_state.next_scene_id = 2; // Move to levelB
+                Mix_PlayChannel(-1, m_game_state.level_up_sfx, 0);
                 return;
             }
-            m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
-            m_game_state.enemies[i].set_position(glm::vec3(7.0f, 0.0f, 0.0f));
-
-
         }
-        m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
+        else {
+            // Player attacking enemy
+            if (m_game_state.player->get_animation_state() == STATE_ATTACKING) {
+                if (m_game_state.player->get_animation_index() == m_game_state.player->get_animation_frames() / 2 && !damage_applied) {
+                    // Apply damage once
+                    if (m_game_state.player->check_attack_collision(&m_game_state.enemies[i])) {
+                        m_game_state.enemies[i].damage(20);
+                        m_game_state.enemies[i].set_animation_state(STATE_HURT);
 
+                        // Calculate knockback direction
+                        glm::vec3 knockback_dir = glm::normalize(m_game_state.enemies[i].get_position() - m_game_state.player->get_position());
+                        knockback_dir.y = 1.0f; // Add some upward force
+                        m_game_state.enemies[i].apply_knockback(knockback_dir, 3.0f);
+
+                        Mix_PlayChannel(1, m_game_state.punch_sfx, 0);
+                        damage_applied = true;
+                    }
+                }
+
+                // Reset flag when attack animation is done
+                if (m_game_state.player->get_animation_index() >= m_game_state.player->get_animation_frames() - 1) {
+                    damage_applied = false;
+                }
+            }
+
+            // Enemy attacking player
+            if (glm::distance(m_game_state.player->get_position(), m_game_state.enemies[i].get_position()) < 2.0f) {
+                // If enemy is very close and cooldown is finished
+                if (enemy_attack_cooldown <= 0 && m_game_state.enemies[i].get_animation_state() != STATE_ATTACKING) {
+                    m_game_state.enemies[i].set_animation_state(STATE_ATTACKING);
+                    enemy_attack_cooldown = 1.0f; // 1 second cooldown
+                }
+
+                // Apply damage at middle of attack animation
+                if (m_game_state.enemies[i].get_animation_state() == STATE_ATTACKING && m_game_state.enemies[i].get_animation_index() == m_game_state.enemies[i].get_animation_frames() / 2) {
+                    m_game_state.player->damage(1);
+                    glm::vec3 knockback_dir = glm::normalize(m_game_state.player->get_position() - m_game_state.enemies[i].get_position());
+                    knockback_dir.y = 1.0f;
+                    m_game_state.player->apply_knockback(knockback_dir, 3.0f);
+
+                    // If player health reaches 0, lose a life
+                    if (m_game_state.player->get_health() <= 0) {
+                        *lives -= 1;
+                        m_game_state.player->set_health(100); // reset health
+                        Mix_PlayChannel(1, m_game_state.punch_sfx, 0);
+
+                        if (*lives == 0) {
+                            m_game_state.next_scene_id = 4; // Render lose scene
+                            *lives = 3;
+                            return;
+                        }
+
+                        // Reset positions after losing health
+                        m_game_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
+                        m_game_state.enemies[i].set_position(glm::vec3(7.0f, 0.0f, 0.0f));
+                    }
+                }
+            }
+
+            // Update enemy
+            m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
+        }
     }
 
+    
+    
+   
     m_platform->set_position(glm::vec3(16.0f, -5.0f, 0.0f));
 
-
-
-
-    if (m_game_state.player->get_position().y < -10.0f) {
-        m_game_state.next_scene_id = 2;
-        Mix_PlayChannel(-1, m_game_state.level_up_sfx, 0);  // Play level-up sound
-    }
 }
 
 void LevelA::render(ShaderProgram* program)
@@ -227,15 +287,20 @@ void LevelA::render(ShaderProgram* program)
     if (lives != nullptr) {
         std::string lives_text = "Lives: " + std::to_string(*lives);
         Utility::draw_text(program, Utility::load_texture("assets/font_sheet2.png"),
-            lives_text, 0.5f, 0.0f, glm::vec3(7.0f, -0.5f, -0.5f));
+            lives_text, 0.5f, 0.0f, glm::vec3(12.0f, -0.5f, -0.5f));
     } 
 
     // Display health and super stats
-    std::string health_text = "Health: " + std::to_string(m_game_state.player_health);
+    std::string health_text = "Health: " + std::to_string(m_game_state.player->get_health());
     Utility::draw_text(program, m_font_texture_id, health_text, 0.5f, 0.0f, glm::vec3(0.5f, -0.5f, 0.0f));
 
-    std::string super_text = "Super: " + std::to_string(m_game_state.player_super);
-    Utility::draw_text(program, m_font_texture_id, super_text, 0.5f, 0.0f, glm::vec3(0.5f, -1.2f, 0.0f));
+    /*std::string super_text = "Super: " + std::to_string(m_game_state.player_super);
+    Utility::draw_text(program, m_font_texture_id, super_text, 0.5f, 0.0f, glm::vec3(0.5f, -1.2f, 0.0f));*/
 
+        
+    std::string enemy_health_text = "Enemy: " + std::to_string(m_game_state.enemies[0].get_health());
+    Utility::draw_text(program, m_font_texture_id, enemy_health_text, 0.5f, 0.0f, glm::vec3(7.0f, -0.5f, 0.0f));
+        
+    
 
 }

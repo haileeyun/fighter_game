@@ -36,6 +36,10 @@ private:
     std::unordered_map<AnimationState, GLuint> m_state_textures;
     std::unordered_map<AnimationState, glm::ivec2> m_state_frames;
 
+    // stats
+    int m_health = 100;  // default health
+    bool m_is_attacking = false;  
+
 
     //  TRANSFORMATIONS  //
     glm::vec3 m_movement;
@@ -151,10 +155,18 @@ public:
     bool      const get_collided_right() const { return m_collided_right; }
     bool      const get_collided_left() const { return m_collided_left; }
     float get_height() const { return m_height; }
+    int const get_health() const { return m_health; }
+    bool const is_attacking() const { return m_is_attacking; }
+    AnimationState get_animation_state() { return m_animation_state; }
+    int get_animation_frames() { return m_animation_frames; }
+    int get_animation_index() { return m_animation_index;  }
 
     void activate() { m_is_active = true; };
     void deactivate() { m_is_active = false; };
+
+
     //  SETTERS //
+
     void const set_entity_type(EntityType new_entity_type) { m_entity_type = new_entity_type; };
     void const set_ai_type(AIType new_ai_type) { m_ai_type = new_ai_type; };
     //void const set_ai_state(AIState new_state) { m_ai_state = new_state; };
@@ -176,8 +188,17 @@ public:
     void const set_height(float new_height) { m_height = new_height; }
     void set_scale(float scale) { m_scale = glm::vec3(scale, scale, 1.0f); }
     void set_collided_bottom(bool collided) { m_collided_bottom = collided; }
+    void const set_health(int new_health) { m_health = new_health; }
+    void damage(int amount) { m_health = std::max(0, m_health - amount); }
+    void start_attack() { m_is_attacking = true; }
+    void end_attack() { m_is_attacking = false; }
 
-    
+    // etc
+    bool check_attack_collision(Entity* other) const;
+    void apply_knockback(glm::vec3 direction, float force) {
+        m_velocity = direction * force;
+    }
+
    
 
 };
