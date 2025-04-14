@@ -96,6 +96,8 @@ GLuint g_background_texture;
 glm::mat4 g_background_matrix;
 
 
+
+
 AppStatus g_app_status = RUNNING;
 
 void swtich_to_scene(Scene* scene);
@@ -393,8 +395,25 @@ void render()
     // Restore the view matrix for the rest of the scene
     g_shader_program.set_view_matrix(original_view_matrix);
 
+    // world rendering
     g_current_scene->render(&g_shader_program);
 
+    // text rendering (stuff with fixed positions)
+    glm::mat4 ui_view_matrix = glm::mat4(1.0f); 
+    g_shader_program.set_view_matrix(ui_view_matrix);
+
+    GLuint font_texture_id = Utility::load_texture("assets/white_font_sheet.png");
+
+    if (g_current_scene != g_menu_screen && g_current_scene != g_lose_scene && g_current_scene != g_win_scene) {
+        std::string health_text = "Health: " + std::to_string(g_current_scene->get_state().player->get_health());
+        Utility::draw_text(&g_shader_program, font_texture_id, health_text, 0.3f, 0.0f, glm::vec3(-4.5f, -3.25f, 0.0f));  // Fixed position in bottom left
+
+        // Enemy health in bottom right corner
+        std::string enemy_health_text = "Enemy: " + std::to_string(g_current_scene->get_state().enemies[0].get_health());
+        Utility::draw_text(&g_shader_program, font_texture_id, enemy_health_text, 0.3f, 0.0f, glm::vec3(2.0f, -3.25f, 0.0f));  // Fixed position in bottom right
+    }
+
+    //g_shader_program.set_view_matrix(g_view_matrix);
 
     g_effects->render();
 

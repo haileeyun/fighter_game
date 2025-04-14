@@ -142,9 +142,6 @@ void LevelA::initialise()
     m_platform->set_position(glm::vec3(16.0f, -5.0f, 0.0f));
     m_platform->set_scale(glm::vec3(2.0f, 2.0f, 1.0f)); 
 
-    // font
-    m_font_texture_id = Utility::load_texture("assets/font_sheet2.png");
-
 
     /**
      BGM and SFX
@@ -290,22 +287,22 @@ void LevelA::render(ShaderProgram* program)
     m_platform->render(program);
 
 
-    if (lives != nullptr) {
+    /*if (lives != nullptr) {
         std::string lives_text = "Lives: " + std::to_string(*lives);
         Utility::draw_text(program, Utility::load_texture("assets/font_sheet2.png"),
             lives_text, 0.5f, 0.0f, glm::vec3(12.0f, -0.5f, -0.5f));
-    } 
+    } */
 
     // Display health and super stats
-    std::string health_text = "Health: " + std::to_string(m_game_state.player->get_health());
-    Utility::draw_text(program, m_font_texture_id, health_text, 0.5f, 0.0f, glm::vec3(0.5f, -0.5f, 0.0f));
+    //std::string health_text = "Health: " + std::to_string(m_game_state.player->get_health());
+    //Utility::draw_text(program, m_font_texture_id, health_text, 0.5f, 0.0f, glm::vec3(0.5f, -0.5f, 0.0f));
 
     /*std::string super_text = "Super: " + std::to_string(m_game_state.player_super);
     Utility::draw_text(program, m_font_texture_id, super_text, 0.5f, 0.0f, glm::vec3(0.5f, -1.2f, 0.0f));*/
 
         
-    std::string enemy_health_text = "Enemy: " + std::to_string(m_game_state.enemies[0].get_health());
-    Utility::draw_text(program, m_font_texture_id, enemy_health_text, 0.5f, 0.0f, glm::vec3(7.0f, -0.5f, 0.0f));
+    //std::string enemy_health_text = "Enemy: " + std::to_string(m_game_state.enemies[0].get_health());
+    //Utility::draw_text(program, m_font_texture_id, enemy_health_text, 0.5f, 0.0f, glm::vec3(7.0f, -0.5f, 0.0f));
         
     
 
