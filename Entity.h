@@ -6,7 +6,7 @@
 #include "ShaderProgram.h"
 #include <unordered_map>
 
-enum EntityType { PLATFORM, PLAYER, ENEMY };
+enum EntityType { PLATFORM, PLAYER, ENEMY, PROJECTILE };
 
 enum AIType { WALKER, GUARD, FLYER, SHOOTER };
 //enum AIState { AI_WALKING, AI_IDLE, AI_ATTACKING, AI_HURT, AI_DEATH };
@@ -160,7 +160,7 @@ public:
     AnimationState get_animation_state() { return m_animation_state; }
     int get_animation_frames() { return m_animation_frames; }
     int get_animation_index() { return m_animation_index;  }
-    
+    bool is_active() { return m_is_active; }
 
     void activate() { m_is_active = true; };
     void deactivate() { m_is_active = false; };
@@ -199,6 +199,8 @@ public:
     void apply_knockback(glm::vec3 direction, float force) {
         m_velocity = direction * force;
     }
+    void ai_shoot(Entity* player);
+    void shoot(glm::vec3 position, glm::vec3 direction, float speed);
 
    
 

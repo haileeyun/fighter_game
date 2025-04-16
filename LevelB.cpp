@@ -11,7 +11,10 @@
 
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
-
+static float BULLET_SPEED = 20.0f;
+static int DAMAGE_TO_ENEMY = 50;
+static float ENEMY_SPEED = 2.0f;
+static float PLAYER_SPEED = 3.0f;
 
 
 static bool damage_applied = false;
@@ -35,6 +38,7 @@ LevelB::~LevelB()
     delete[] m_game_state.enemies;
     delete    m_game_state.player;
     delete    m_game_state.map;
+    delete m_bullet;
     Mix_FreeChunk(m_game_state.jump_sfx);
     Mix_FreeChunk(m_game_state.level_up_sfx);
     Mix_FreeChunk(m_game_state.punch_sfx);
@@ -64,14 +68,7 @@ void LevelB::initialise()
     glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
 
-    m_game_state.player = new Entity(
-        idle_texture,
-        5.0f,
-        glm::vec3(0.0f, -9.8f, 0.0f),
-        7.0f,
-        1.5f,
-        1.8f,
-        PLAYER);
+    m_game_state.player = new Entity(idle_texture, PLAYER_SPEED, glm::vec3(0.0f, -9.8f, 0.0f), 7.0f, 1.5f, 1.8f, PLAYER);
 
     m_game_state.player->set_scale(2.0f);
 
@@ -103,7 +100,8 @@ void LevelB::initialise()
 
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
-        m_game_state.enemies[i] = Entity(enemy_idle_texture, 1.0f, 0.5f, 1.7f, ENEMY, GUARD, STATE_IDLE);
+        m_game_state.enemies[i] = Entity(enemy_idle_texture, ENEMY_SPEED, 0.5f, 1.7f, ENEMY, SHOOTER, STATE_IDLE);
+        m_game_state.enemies[i].activate();  // Make sure it's active
         m_game_state.enemies[i].set_health(100); // Set initial health
     }
 
@@ -116,13 +114,23 @@ void LevelB::initialise()
 
     // Set initial state
     m_game_state.enemies[0].set_animation_state(STATE_IDLE);
-    m_game_state.enemies[0].update(0.01f, m_game_state.player, NULL, 0, m_game_state.map); // idkkk
+    m_game_state.enemies[0].update(0.01f, m_game_state.player, NULL, 0, m_game_state.map); 
 
 
     m_game_state.enemies[0].set_position(INIT_ENEMY_POSITION);
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     m_game_state.enemies[0].activate();
     m_game_state.enemies[0].set_scale(2.0f);
+
+
+    // BULLETS
+    
+    // Create bullets
+    GLuint bullet_texture = Utility::load_texture("assets/dagger.png");
+    m_bullet = new Entity(bullet_texture, BULLET_SPEED, 0.5f, 0.5f, PROJECTILE);
+    m_bullet->set_position(glm::vec3(0.0f)); // might remove this
+    m_bullet->set_scale(glm::vec3(0.5f, 0.5f, 1.0f));
+    m_bullet->deactivate();
 
 
     /**
@@ -139,13 +147,47 @@ void LevelB::update(float delta_time)
 {
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
 
-
-    // cooldown so the enemy doesn't spam attack me    
     enemy_attack_cooldown -= delta_time;
+    if (m_bullet->get_position().x <= -5.0f || m_bullet->get_position().x >= 20.0f || m_bullet->get_position().y <= -20.0f || m_bullet->get_position().y >= 20.0f) {
+        m_bullet->deactivate(); // deactivate if the bullet goes out of bounds
+        m_bullet->set_position(glm::vec3(0.0f));
+    }
 
+    // check if bullet hits the player
+    if (m_bullet->is_active()) {
+        if (m_game_state.player->check_collision(m_bullet)) {
+            // subtract health, deactivate bullet, dont render, reset position?
+            m_game_state.player->damage(1); // damage player
+            m_bullet->deactivate(); // deactivate
+            m_bullet->set_position(glm::vec3(0.0f));
+            glm::vec3 knockback_dir = glm::normalize(m_game_state.player->get_position() - m_game_state.enemies[0].get_position());
+            knockback_dir.y = 1.0f;
+            m_game_state.player->apply_knockback(knockback_dir, 3.0f);
+
+            if (m_game_state.player->get_health() <= 0) {
+                *lives -= 1;
+                m_game_state.player->set_health(100); // reset health
+                Mix_PlayChannel(1, m_game_state.punch_sfx, 0);
+
+                if (*lives == 0) {
+                    m_game_state.next_scene_id = 4; // Render lose scene
+                    *lives = 3;
+                    return;
+                }
+
+                // Reset positions after losing health
+                m_game_state.player->set_position(INIT_PLAYER_POSITION);
+                m_game_state.enemies[0].set_position(INIT_ENEMY_POSITION);
+            }
+
+        }
+    }
+    
 
     for (int i = 0; i < ENEMY_COUNT; i++) {
         // Check if enemy is still active/alive
+        m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
+
         if (m_game_state.enemies[i].get_health() <= 0) {
             m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
 
@@ -186,37 +228,34 @@ void LevelB::update(float delta_time)
                 }
             }
 
-            // Enemy attacking player
-            if (glm::distance(m_game_state.player->get_position(), m_game_state.enemies[i].get_position()) < 2.0f) {
+
+            // enemy attacking player: version with no bullets, just want to trigger animation from distance
+            if (glm::distance(m_game_state.player->get_position(), m_game_state.enemies[i].get_position()) < 5.0f) {
                 // If enemy is very close and cooldown is finished
-                if (enemy_attack_cooldown <= 0 && m_game_state.enemies[i].get_animation_state() != STATE_ATTACKING) {
+                if (enemy_attack_cooldown <= 0 && m_game_state.enemies[i].get_animation_state() != STATE_ATTACKING && !(m_bullet->is_active())) {
                     m_game_state.enemies[i].set_animation_state(STATE_ATTACKING);
-                    enemy_attack_cooldown = 1.0f; // 1 second cooldown
+                    enemy_attack_cooldown = 2.0f; // 3 second cooldown
                 }
 
-                // Apply damage at middle of attack animation
+                // send bullet in middle of attack animation
                 if (m_game_state.enemies[i].get_animation_state() == STATE_ATTACKING && m_game_state.enemies[i].get_animation_index() == m_game_state.enemies[i].get_animation_frames() / 2) {
-                    m_game_state.player->damage(1);
-                    glm::vec3 knockback_dir = glm::normalize(m_game_state.player->get_position() - m_game_state.enemies[i].get_position());
-                    knockback_dir.y = 1.0f;
-                    m_game_state.player->apply_knockback(knockback_dir, 3.0f);
+                    glm::vec3 bullet_pos = m_game_state.enemies[i].get_position();
+                    glm::vec3 direction;
 
-                    // If player health reaches 0, lose a life
-                    if (m_game_state.player->get_health() <= 0) {
-                        *lives -= 1;
-                        m_game_state.player->set_health(100); // reset health
-                        Mix_PlayChannel(1, m_game_state.punch_sfx, 0);
-
-                        if (*lives == 0) {
-                            m_game_state.next_scene_id = 4; // Render lose scene
-                            *lives = 3;
-                            return;
-                        }
-
-                        // Reset positions after losing health
-                        m_game_state.player->set_position(INIT_PLAYER_POSITION);
-                        m_game_state.enemies[i].set_position(INIT_ENEMY_POSITION);
+                    // Determine direction based on enemy facing
+                    if (m_game_state.player->get_position().x < m_game_state.enemies[i].get_position().x) {
+                        bullet_pos.x -= 0.5f;
+                        direction = glm::vec3(-1.0f, 0.0f, 0.0f);
                     }
+                    else {
+                        bullet_pos.x += 0.5f;
+                        direction = glm::vec3(1.0f, 0.0f, 0.0f);
+                    }
+                    // activate the bullet, shoot it
+                    m_bullet->activate();
+                    m_bullet->shoot(bullet_pos, direction, BULLET_SPEED);
+                    
+                    
                 }
             }
 
@@ -224,6 +263,7 @@ void LevelB::update(float delta_time)
             m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
         }
     }
+    m_bullet->update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
 
 }
 
@@ -237,25 +277,13 @@ void LevelB::render(ShaderProgram* program)
     for (int i = 0; i < ENEMY_COUNT; i++) {
         m_game_state.enemies[i].render(program);
     }
+    if (m_bullet->is_active()) {
+        m_bullet->render(program);
+    }
 
 
+    Mix_PlayChannel(2, m_game_state.punch_sfx, 0);
 
-    /*if (lives != nullptr) {
-        std::string lives_text = "Lives: " + std::to_string(*lives);
-        Utility::draw_text(program, Utility::load_texture("assets/font_sheet2.png"),
-            lives_text, 0.5f, 0.0f, glm::vec3(12.0f, -0.5f, -0.5f));
-    } */
-
-    // Display health and super stats
-    //std::string health_text = "Health: " + std::to_string(m_game_state.player->get_health());
-    //Utility::draw_text(program, m_font_texture_id, health_text, 0.5f, 0.0f, glm::vec3(0.5f, -0.5f, 0.0f));
-
-    /*std::string super_text = "Super: " + std::to_string(m_game_state.player_super);
-    Utility::draw_text(program, m_font_texture_id, super_text, 0.5f, 0.0f, glm::vec3(0.5f, -1.2f, 0.0f));*/
-
-
-    //std::string enemy_health_text = "Enemy: " + std::to_string(m_game_state.enemies[0].get_health());
-    //Utility::draw_text(program, m_font_texture_id, enemy_health_text, 0.5f, 0.0f, glm::vec3(7.0f, -0.5f, 0.0f));
 
 
 

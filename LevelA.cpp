@@ -11,6 +11,9 @@
 
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
+static int DAMAGE_TO_ENEMY = 50;
+static float ENEMY_SPEED = 2.0f;
+static float PLAYER_SPEED = 3.0f;
 
 
 
@@ -64,14 +67,7 @@ void LevelA::initialise()
     glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
 
-    m_game_state.player = new Entity(
-        idle_texture,
-        5.0f,
-        glm::vec3(0.0f, -9.8f, 0.0f),
-        7.0f,
-        1.5f,
-        1.8f,
-        PLAYER);
+    m_game_state.player = new Entity(idle_texture, PLAYER_SPEED, glm::vec3(0.0f, -9.8f, 0.0f), 7.0f, 1.5f, 1.8f, PLAYER);
 
     m_game_state.player->set_scale(2.0f);
 
@@ -103,7 +99,7 @@ void LevelA::initialise()
 
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
-        m_game_state.enemies[i] = Entity(enemy_idle_texture, 1.0f, 0.5f, 1.7f, ENEMY, GUARD, STATE_IDLE);
+        m_game_state.enemies[i] = Entity(enemy_idle_texture, ENEMY_SPEED, 0.5f, 1.7f, ENEMY, GUARD, STATE_IDLE);
         m_game_state.enemies[i].set_health(100); // Set initial health
     }
 
@@ -167,7 +163,7 @@ void LevelA::update(float delta_time)
                 if (m_game_state.player->get_animation_index() == m_game_state.player->get_animation_frames() / 2 && !damage_applied) {
                     // Apply damage once
                     if (m_game_state.player->check_attack_collision(&m_game_state.enemies[i])) {
-                        m_game_state.enemies[i].damage(20);
+                        m_game_state.enemies[i].damage(DAMAGE_TO_ENEMY);
                         m_game_state.enemies[i].set_animation_state(STATE_HURT);
 
                         // Calculate knockback direction

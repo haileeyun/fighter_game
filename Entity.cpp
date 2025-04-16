@@ -18,6 +18,18 @@
 
 void Entity::ai_activate(Entity* player)
 {
+    if (m_animation_state == STATE_HURT || m_animation_state == STATE_DEATH) {
+        // Just maintain current state
+        m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+        return;
+    }
+    if (m_animation_state == STATE_ATTACKING) {
+        // If the attack animation is done, return to idle
+        if (m_animation_index >= m_animation_frames - 1) {
+            set_animation_state(STATE_IDLE);
+        }
+        return;
+    }
     switch (m_ai_type)
     {
     case WALKER:
@@ -30,6 +42,10 @@ void Entity::ai_activate(Entity* player)
 
     case FLYER:
         ai_fly();
+        break;
+
+    case SHOOTER:
+        ai_shoot(player);
         break;
 
     default:
@@ -93,6 +109,51 @@ void Entity::ai_fly()
     m_movement.y = sinf(SDL_GetTicks() / 100.0f) * 1.0f; // Gentle up/down motion
 }
 
+
+void Entity::ai_shoot(Entity* player) {
+    if (m_animation_state == STATE_HURT || m_animation_state == STATE_DEATH) {
+        m_movement = glm::vec3(0.0f);
+        return;
+    }
+
+    float distance = glm::distance(m_position, player->get_position());
+
+    // If within shooting range but not too close
+    if (distance < 8.0f && distance > 3.0f) {
+        m_movement = glm::vec3(0.0f);  // Stop moving
+
+        // Force attack state if not already attacking
+        if (m_animation_state != STATE_ATTACKING) {
+            set_animation_state(STATE_ATTACKING);
+        }
+    }
+    // If too close, back away
+    else if (distance <= 3.0f) {
+        if (m_position.x > player->get_position().x) {
+            m_movement = glm::vec3(1.0f, 0.0f, 0.0f);  // Move right
+        }
+        else {
+            m_movement = glm::vec3(-1.0f, 0.0f, 0.0f); // Move left
+        }
+    }
+    // If too far, approach player
+    else {
+        if (m_position.x > player->get_position().x) {
+            m_movement = glm::vec3(-1.0f, 0.0f, 0.0f); // Move left
+        }
+        else {
+            m_movement = glm::vec3(1.0f, 0.0f, 0.0f);  // Move right
+        }
+    }
+}
+
+
+void Entity::shoot(glm::vec3 position, glm::vec3 direction, float speed)
+{
+    //m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
+    m_position = position;
+    m_movement = direction;
+}
 void Entity::add_animation_texture(AnimationState state, GLuint texture_id, int cols, int rows) {
     m_state_textures[state] = texture_id;
     m_state_frames[state] = glm::ivec2(cols, rows);
