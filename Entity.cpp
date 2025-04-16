@@ -70,7 +70,7 @@ void Entity::ai_guard(Entity* player) {
     float distance = glm::distance(m_position, player->get_position());
 
     // follow player if within certain range
-    if (distance < 7.0f) {
+    if (distance < 10.0f) {
         // if close, prepare to attack
         if (distance < 1.5f) {
             m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -111,21 +111,37 @@ void Entity::ai_fly()
 
 
 void Entity::ai_shoot(Entity* player) {
-    if (m_animation_state == STATE_HURT || m_animation_state == STATE_DEATH) {
-        m_movement = glm::vec3(0.0f);
+    if (m_animation_state == STATE_ATTACKING ||
+        m_animation_state == STATE_HURT ||
+        m_animation_state == STATE_DEATH) {
+        m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
         return;
     }
 
     float distance = glm::distance(m_position, player->get_position());
+    static const float PLATFORM_LEFT_EDGE = 4.0f;  // Left edge of the platform
+    static const float PLATFORM_RIGHT_EDGE = 12.0f; // Right edge of the platform
+    float edge_threshold = 1.0f; // How close the enemy needs to be to the edge to trigger jumping
+
+    bool near_left_edge = m_position.x <= PLATFORM_LEFT_EDGE + edge_threshold;
+    bool near_right_edge = m_position.x >= PLATFORM_RIGHT_EDGE - edge_threshold;
+
+    // If too close to the edge and player is approaching, jump over the player
+    if ((near_left_edge || near_right_edge) && distance < 3.0f) {
+        // Determine jump direction (away from the edge)
+        if (near_left_edge) {
+            m_movement = glm::vec3(1.0f, 1.0f, 0.0f); // Jump right
+        }
+        else if (near_right_edge) {
+            m_movement = glm::vec3(-1.0f, 1.0f, 0.0f); // Jump left
+        }
+        m_is_jumping = true; // Trigger jump
+        return;
+    }
 
     // If within shooting range but not too close
-    if (distance < 8.0f && distance > 3.0f) {
+    if (distance < 10.0f && distance > 3.0f) {
         m_movement = glm::vec3(0.0f);  // Stop moving
-
-        // Force attack state if not already attacking
-        if (m_animation_state != STATE_ATTACKING) {
-            set_animation_state(STATE_ATTACKING);
-        }
     }
     // If too close, back away
     else if (distance <= 3.0f) {

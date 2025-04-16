@@ -83,6 +83,7 @@ void LevelB::initialise()
     // Set initial state
     m_game_state.player->set_animation_state(STATE_IDLE);
 
+
     m_game_state.player->set_position(INIT_PLAYER_POSITION);
 
 
@@ -101,7 +102,6 @@ void LevelB::initialise()
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
         m_game_state.enemies[i] = Entity(enemy_idle_texture, ENEMY_SPEED, 0.5f, 1.7f, ENEMY, SHOOTER, STATE_IDLE);
-        m_game_state.enemies[i].activate();  // Make sure it's active
         m_game_state.enemies[i].set_health(100); // Set initial health
     }
 
@@ -186,7 +186,7 @@ void LevelB::update(float delta_time)
 
     for (int i = 0; i < ENEMY_COUNT; i++) {
         // Check if enemy is still active/alive
-        m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
+        //m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
 
         if (m_game_state.enemies[i].get_health() <= 0) {
             m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
@@ -229,12 +229,12 @@ void LevelB::update(float delta_time)
             }
 
 
-            // enemy attacking player: version with no bullets, just want to trigger animation from distance
-            if (glm::distance(m_game_state.player->get_position(), m_game_state.enemies[i].get_position()) < 5.0f) {
+            // enemy attacking player
+            if (glm::distance(m_game_state.player->get_position(), m_game_state.enemies[i].get_position()) < 9.0f) {
                 // If enemy is very close and cooldown is finished
                 if (enemy_attack_cooldown <= 0 && m_game_state.enemies[i].get_animation_state() != STATE_ATTACKING && !(m_bullet->is_active())) {
                     m_game_state.enemies[i].set_animation_state(STATE_ATTACKING);
-                    enemy_attack_cooldown = 2.0f; // 3 second cooldown
+                    enemy_attack_cooldown = 2.0f; // 2 second cooldown
                 }
 
                 // send bullet in middle of attack animation
