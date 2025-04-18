@@ -414,6 +414,9 @@ void render()
         std::string health_text = "Health: " + std::to_string(g_current_scene->get_state().player->get_health());
         Utility::draw_text(&g_shader_program, font_texture_id, health_text, 0.3f, 0.0f, glm::vec3(-4.5f, -3.25f, 0.0f));  // Fixed position in bottom left
 
+        std::string lives_text = "Lives: " + std::to_string(*g_current_scene->lives);
+        Utility::draw_text(&g_shader_program, font_texture_id, lives_text, 0.3f, 0.0f, glm::vec3(-4.5f, 3.25f, 0.0f));
+
         // Enemy health in bottom right corner
         std::string enemy_health_text = "Enemy: " + std::to_string(g_current_scene->get_state().enemies[0].get_health());
         Utility::draw_text(&g_shader_program, font_texture_id, enemy_health_text, 0.3f, 0.0f, glm::vec3(2.0f, -3.25f, 0.0f));  // Fixed position in bottom right

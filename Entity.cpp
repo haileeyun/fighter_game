@@ -70,7 +70,7 @@ void Entity::ai_guard(Entity* player) {
     float distance = glm::distance(m_position, player->get_position());
 
     // follow player if within certain range
-    if (distance < 10.0f) {
+    if (distance < 7.0f) {
         // if close, prepare to attack
         if (distance < 1.5f) {
             m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -121,7 +121,7 @@ void Entity::ai_shoot(Entity* player) {
     float distance = glm::distance(m_position, player->get_position());
     static const float PLATFORM_LEFT_EDGE = 4.0f;  // Left edge of the platform
     static const float PLATFORM_RIGHT_EDGE = 12.0f; // Right edge of the platform
-    float edge_threshold = 1.0f; // How close the enemy needs to be to the edge to trigger jumping
+    float edge_threshold = 2.0f; // How close the enemy needs to be to the edge to trigger jumping
 
     bool near_left_edge = m_position.x <= PLATFORM_LEFT_EDGE + edge_threshold;
     bool near_right_edge = m_position.x >= PLATFORM_RIGHT_EDGE - edge_threshold;
@@ -533,6 +533,12 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
             }
             else if (m_movement.x > 0.1f) {
                 set_animation_state(STATE_RUNNING_RIGHT);
+            }
+            else if (m_velocity.y > 0.1f) {
+                set_animation_state(STATE_JUMPING);
+            }
+            else if (m_velocity.y < -0.1f) {
+                set_animation_state(STATE_FALLING);
             }
             else {
                 set_animation_state(STATE_IDLE);

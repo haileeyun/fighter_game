@@ -56,29 +56,31 @@ void LevelB::initialise()
 
     // PLAYER CODE
 
-    GLuint idle_texture = Utility::load_texture("assets/idle.png");
-    GLuint run_left_texture = Utility::load_texture("assets/run_left.png");
-    GLuint run_right_texture = Utility::load_texture("assets/run_right.png");
-    GLuint jump_texture = Utility::load_texture("assets/jump.png");
-    GLuint fall_texture = Utility::load_texture("assets/fall.png");
-    GLuint attack_texture = Utility::load_texture("assets/attack.png");
-    GLuint hurt_texture = Utility::load_texture("assets/hurt.png");
+    GLuint idle_texture = Utility::load_texture("assets/metal_idle.png");
+    GLuint run_left_texture = Utility::load_texture("assets/metal_run_left.png");
+    GLuint run_right_texture = Utility::load_texture("assets/metal_run_right.png");
+    GLuint jump_texture = Utility::load_texture("assets/metal_jump.png");
+    GLuint fall_texture = Utility::load_texture("assets/metal_fall.png");
+    GLuint attack_texture = Utility::load_texture("assets/metal_basic_attack.png");
+    GLuint hurt_texture = Utility::load_texture("assets/metal_hurt.png");
 
 
     glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
 
-    m_game_state.player = new Entity(idle_texture, PLAYER_SPEED, glm::vec3(0.0f, -9.8f, 0.0f), 7.0f, 1.5f, 1.8f, PLAYER);
+    m_game_state.player = new Entity(idle_texture, PLAYER_SPEED, glm::vec3(0.0f, -9.8f, 0.0f), 5.0f, 0.5f, 3.5f, PLAYER);
 
-    m_game_state.player->set_scale(2.0f);
+    //m_game_state.player->set_scale(glm::vec3(6.0f, 3.6f, 1.0f));
+    m_game_state.player->set_scale(4.0f);
 
-    m_game_state.player->add_animation_texture(STATE_IDLE, idle_texture, 4, 1);
+
+    m_game_state.player->add_animation_texture(STATE_IDLE, idle_texture, 8, 1);
     m_game_state.player->add_animation_texture(STATE_RUNNING_LEFT, run_left_texture, 8, 1);
     m_game_state.player->add_animation_texture(STATE_RUNNING_RIGHT, run_right_texture, 8, 1);
     m_game_state.player->add_animation_texture(STATE_JUMPING, jump_texture, 3, 1);
-    m_game_state.player->add_animation_texture(STATE_FALLING, fall_texture, 2, 1);
+    m_game_state.player->add_animation_texture(STATE_FALLING, fall_texture, 3, 1);
     m_game_state.player->add_animation_texture(STATE_ATTACKING, attack_texture, 8, 1);
-    m_game_state.player->add_animation_texture(STATE_HURT, hurt_texture, 1, 1);
+    m_game_state.player->add_animation_texture(STATE_HURT, hurt_texture, 6, 1);
 
     // Set initial state
     m_game_state.player->set_animation_state(STATE_IDLE);
@@ -89,28 +91,28 @@ void LevelB::initialise()
 
     // ENEMIES
 
-    GLuint enemy_idle_texture = Utility::load_texture("assets/mushroom_idle.png");
-    GLuint enemy_run_left_texture = Utility::load_texture("assets/mushroom_run_left.png");
-    GLuint enemy_run_right_texture = Utility::load_texture("assets/mushroom_run_right.png");
-    GLuint enemy_attack_texture = Utility::load_texture("assets/mushroom_attack.png");
-    GLuint enemy_hurt_texture = Utility::load_texture("assets/mushroom_hit.png");
-    GLuint enemy_death_texture = Utility::load_texture("assets/mushroom_die.png");
+    GLuint enemy_idle_texture = Utility::load_texture("assets/water_idle.png");
+    GLuint enemy_run_left_texture = Utility::load_texture("assets/water_run_left.png");
+    GLuint enemy_run_right_texture = Utility::load_texture("assets/water_run_right.png");
+    GLuint enemy_attack_texture = Utility::load_texture("assets/water_basic_attack.png");
+    GLuint enemy_hurt_texture = Utility::load_texture("assets/water_hurt.png");
+    GLuint enemy_death_texture = Utility::load_texture("assets/water_death.png");
 
 
     m_game_state.enemies = new Entity[ENEMY_COUNT];
 
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
-        m_game_state.enemies[i] = Entity(enemy_idle_texture, ENEMY_SPEED, 0.5f, 1.7f, ENEMY, SHOOTER, STATE_IDLE);
+        m_game_state.enemies[i] = Entity(enemy_idle_texture, ENEMY_SPEED, 1.0f, 1.7f, ENEMY, SHOOTER, STATE_IDLE);
         m_game_state.enemies[i].set_health(100); // Set initial health
     }
 
-    m_game_state.enemies[0].add_animation_texture(STATE_IDLE, enemy_idle_texture, 7, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_RUNNING_LEFT, enemy_run_left_texture, 8, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_RUNNING_RIGHT, enemy_run_right_texture, 8, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_ATTACKING, enemy_attack_texture, 10, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_HURT, enemy_hurt_texture, 5, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_DEATH, enemy_death_texture, 15, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_IDLE, enemy_idle_texture, 8, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_RUNNING_LEFT, enemy_run_left_texture, 10, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_RUNNING_RIGHT, enemy_run_right_texture, 10, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_ATTACKING, enemy_attack_texture, 21, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_HURT, enemy_hurt_texture, 7, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_DEATH, enemy_death_texture, 16, 1);
 
     // Set initial state
     m_game_state.enemies[0].set_animation_state(STATE_IDLE);
@@ -120,13 +122,14 @@ void LevelB::initialise()
     m_game_state.enemies[0].set_position(INIT_ENEMY_POSITION);
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     m_game_state.enemies[0].activate();
-    m_game_state.enemies[0].set_scale(2.0f);
+    //m_game_state.enemies[0].set_scale(2.0f);
+    m_game_state.enemies[0].set_scale(glm::vec3(6.0f, 2.0f, 1.0f));
 
 
     // BULLETS
     
     // Create bullets
-    GLuint bullet_texture = Utility::load_texture("assets/dagger.png");
+    GLuint bullet_texture = Utility::load_texture("assets/ice.png");
     m_bullet = new Entity(bullet_texture, BULLET_SPEED, 0.5f, 0.5f, PROJECTILE);
     m_bullet->set_position(glm::vec3(0.0f)); // might remove this
     m_bullet->set_scale(glm::vec3(0.5f, 0.5f, 1.0f));

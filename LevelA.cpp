@@ -87,28 +87,32 @@ void LevelA::initialise()
 
     // ENEMIES
 
-    GLuint enemy_idle_texture = Utility::load_texture("assets/mushroom_idle.png");
-    GLuint enemy_run_left_texture = Utility::load_texture("assets/mushroom_run_left.png");
-    GLuint enemy_run_right_texture = Utility::load_texture("assets/mushroom_run_right.png");
-    GLuint enemy_attack_texture = Utility::load_texture("assets/mushroom_attack.png");
-    GLuint enemy_hurt_texture = Utility::load_texture("assets/mushroom_hit.png");
-    GLuint enemy_death_texture = Utility::load_texture("assets/mushroom_die.png");
+    GLuint enemy_idle_texture = Utility::load_texture("assets/fire_idle.png");
+    GLuint enemy_run_left_texture = Utility::load_texture("assets/fire_run_left.png");
+    GLuint enemy_run_right_texture = Utility::load_texture("assets/fire_run_right.png");
+    GLuint enemy_attack_texture = Utility::load_texture("assets/fire_basic_attack.png");
+    GLuint enemy_hurt_texture = Utility::load_texture("assets/fire_hurt.png");
+    GLuint enemy_death_texture = Utility::load_texture("assets/fire_death.png");
+    //GLuint enemy_jump_texture = Utility::load_texture("assets/metal_jump.png");
+    GLuint enemy_fall_texture = Utility::load_texture("assets/fire_fall.png");
 
 
     m_game_state.enemies = new Entity[ENEMY_COUNT];
 
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
-        m_game_state.enemies[i] = Entity(enemy_idle_texture, ENEMY_SPEED, 0.5f, 1.7f, ENEMY, GUARD, STATE_IDLE);
+        m_game_state.enemies[i] = Entity(enemy_idle_texture, ENEMY_SPEED, 1.0f, 1.8f, ENEMY, GUARD, STATE_IDLE);
         m_game_state.enemies[i].set_health(100); // Set initial health
     }
 
-    m_game_state.enemies[0].add_animation_texture(STATE_IDLE, enemy_idle_texture, 7, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_IDLE, enemy_idle_texture, 8, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_RUNNING_LEFT, enemy_run_left_texture, 8, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_RUNNING_RIGHT, enemy_run_right_texture, 8, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_ATTACKING, enemy_attack_texture, 10, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_HURT, enemy_hurt_texture, 5, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_DEATH, enemy_death_texture, 15, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_ATTACKING, enemy_attack_texture, 11, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_HURT, enemy_hurt_texture, 6, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_DEATH, enemy_death_texture, 14, 1);
+    //m_game_state.enemies[0].add_animation_texture(STATE_JUMPING, enemy_jump_texture, 3, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_FALLING, enemy_fall_texture, 3, 1);
 
     // Set initial state
     m_game_state.enemies[0].set_animation_state(STATE_IDLE);
@@ -119,6 +123,7 @@ void LevelA::initialise()
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     m_game_state.enemies[0].activate();
     m_game_state.enemies[0].set_scale(2.0f);
+    //m_game_state.enemies[0].set_scale(glm::vec3(6.0f, 3.6f, 1.0f)); 
 
 
     /**
@@ -134,6 +139,23 @@ void LevelA::initialise()
 void LevelA::update(float delta_time)
 {
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
+
+    // Check if player has fallen off the platform
+    if (m_game_state.player->get_position().y < -15.0f) {  
+        // Player has fallen, lose a life
+        *lives -= 1;
+
+        // Reset player position and health
+        m_game_state.player->set_position(INIT_PLAYER_POSITION);
+        m_game_state.player->set_health(100);  // Reset health to full
+
+        // If no lives left, go to lose scene
+        if (*lives <= 0) {
+            m_game_state.next_scene_id = 4;  
+            *lives = 3;  // Reset lives for next game
+            return;
+        }
+    }
 
   
     // cooldown so the enemy doesn't spam attack me    
