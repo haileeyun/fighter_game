@@ -98,7 +98,7 @@ void LevelA::initialise()
     GLuint enemy_attack_texture = Utility::load_texture("assets/fire_basic_attack.png");
     GLuint enemy_hurt_texture = Utility::load_texture("assets/fire_hurt.png");
     GLuint enemy_death_texture = Utility::load_texture("assets/fire_death.png");
-    //GLuint enemy_jump_texture = Utility::load_texture("assets/metal_jump.png");
+    GLuint enemy_jump_texture = Utility::load_texture("assets/metal_jump.png");
     GLuint enemy_fall_texture = Utility::load_texture("assets/fire_fall.png");
 
 
@@ -116,7 +116,7 @@ void LevelA::initialise()
     m_game_state.enemies[0].add_animation_texture(STATE_ATTACKING, enemy_attack_texture, 11, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_HURT, enemy_hurt_texture, 6, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_DEATH, enemy_death_texture, 14, 1);
-    //m_game_state.enemies[0].add_animation_texture(STATE_JUMPING, enemy_jump_texture, 3, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_JUMPING, enemy_jump_texture, 3, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_FALLING, enemy_fall_texture, 3, 1);
 
     // Set initial state

@@ -15,6 +15,7 @@ static int DAMAGE_TO_ENEMY = 50;
 static int DAMAGE_TO_PLAYER = 5;
 static float ENEMY_SPEED = 2.0f;
 static float PLAYER_SPEED = 3.0f;
+static float PLAYER_JUMP_POWER = 8.0f;
 
 
 static bool damage_applied = false;
@@ -67,7 +68,7 @@ void LevelC::initialise()
     glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
 
-    m_game_state.player = new Entity(idle_texture, PLAYER_SPEED, glm::vec3(0.0f, -9.8f, 0.0f), 5.0f, 1.0f, 1.8f, PLAYER);
+    m_game_state.player = new Entity(idle_texture, PLAYER_SPEED, glm::vec3(0.0f, -9.8f, 0.0f), PLAYER_JUMP_POWER, 1.0f, 1.8f, PLAYER);
 
 
     m_game_state.player->set_scale(2.0f);
@@ -88,28 +89,28 @@ void LevelC::initialise()
 
     // ENEMIES
 
-    GLuint enemy_idle_texture = Utility::load_texture("assets/mushroom_idle.png");
-    GLuint enemy_run_left_texture = Utility::load_texture("assets/mushroom_run_left.png");
-    GLuint enemy_run_right_texture = Utility::load_texture("assets/mushroom_run_right.png");
-    GLuint enemy_attack_texture = Utility::load_texture("assets/mushroom_attack.png");
-    GLuint enemy_hurt_texture = Utility::load_texture("assets/mushroom_hit.png");
-    GLuint enemy_death_texture = Utility::load_texture("assets/mushroom_die.png");
+    GLuint enemy_idle_texture = Utility::load_texture("assets/air_idle.png");
+    GLuint enemy_run_left_texture = Utility::load_texture("assets/air_run_left.png");
+    GLuint enemy_run_right_texture = Utility::load_texture("assets/air_run_right.png");
+    GLuint enemy_attack_texture = Utility::load_texture("assets/air_basic_attack.png");
+    GLuint enemy_hurt_texture = Utility::load_texture("assets/air_hurt.png");
+    GLuint enemy_death_texture = Utility::load_texture("assets/air_death.png");
 
 
     m_game_state.enemies = new Entity[ENEMY_COUNT];
 
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
-        m_game_state.enemies[i] = Entity(enemy_idle_texture, 1.0f, 0.5f, 1.7f, ENEMY, GUARD, STATE_IDLE);
+        m_game_state.enemies[i] = Entity(enemy_idle_texture, ENEMY_SPEED, 1.0f, 1.8f, ENEMY, GUARD, STATE_IDLE);
         m_game_state.enemies[i].set_health(100); // Set initial health
     }
 
-    m_game_state.enemies[0].add_animation_texture(STATE_IDLE, enemy_idle_texture, 7, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_IDLE, enemy_idle_texture, 8, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_RUNNING_LEFT, enemy_run_left_texture, 8, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_RUNNING_RIGHT, enemy_run_right_texture, 8, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_ATTACKING, enemy_attack_texture, 10, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_HURT, enemy_hurt_texture, 5, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_DEATH, enemy_death_texture, 15, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_ATTACKING, enemy_attack_texture, 8, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_HURT, enemy_hurt_texture, 6, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_DEATH, enemy_death_texture, 19, 1);
 
     // Set initial state
     m_game_state.enemies[0].set_animation_state(STATE_IDLE);

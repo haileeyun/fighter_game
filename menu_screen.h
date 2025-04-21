@@ -1,6 +1,8 @@
 #include "Scene.h"
 
 class MenuScreen : public Scene {
+private:
+    GLuint m_font_texture_id;
 public:
     // ————— STATIC ATTRIBUTES ————— //
     int ENEMY_COUNT = 0;
