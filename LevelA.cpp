@@ -13,6 +13,7 @@
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
 static int DAMAGE_TO_ENEMY = 50;
+static int DAMAGE_TO_PLAYER = 5;
 static float ENEMY_SPEED = 2.0f;
 static float PLAYER_SPEED = 3.0f;
 
@@ -218,7 +219,7 @@ void LevelA::update(float delta_time)
 
                 // Apply damage at middle of attack animation
                 if (m_game_state.enemies[i].get_animation_state() == STATE_ATTACKING && m_game_state.enemies[i].get_animation_index() == m_game_state.enemies[i].get_animation_frames() / 2) {
-                    m_game_state.player->damage(1);
+                    m_game_state.player->damage(DAMAGE_TO_PLAYER);
                     glm::vec3 knockback_dir = glm::normalize(m_game_state.player->get_position() - m_game_state.enemies[i].get_position());
                     knockback_dir.y = 1.0f;
                     m_game_state.player->apply_knockback(knockback_dir, 3.0f);

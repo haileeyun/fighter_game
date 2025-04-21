@@ -13,6 +13,7 @@ static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
 static float BULLET_SPEED = 20.0f;
 static int DAMAGE_TO_ENEMY = 50;
+static int DAMAGE_TO_PLAYER = 10;
 static float ENEMY_SPEED = 2.0f;
 static float PLAYER_SPEED = 3.0f;
 
@@ -176,7 +177,7 @@ void LevelB::update(float delta_time)
     if (m_bullet->is_active()) {
         if (m_game_state.player->check_collision(m_bullet)) {
             // subtract health, deactivate bullet, dont render, reset position?
-            m_game_state.player->damage(1); // damage player
+            m_game_state.player->damage(DAMAGE_TO_PLAYER); // damage player
             m_bullet->deactivate(); // deactivate
             m_bullet->set_position(glm::vec3(0.0f));
             glm::vec3 knockback_dir = glm::normalize(m_game_state.player->get_position() - m_game_state.enemies[0].get_position());
