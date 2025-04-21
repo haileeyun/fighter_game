@@ -148,6 +148,24 @@ void LevelB::update(float delta_time)
 {
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
 
+    // Check if player has fallen off the platform
+    if (m_game_state.player->get_position().y < -15.0f) {
+        // Player has fallen, lose a life
+        *lives -= 1;
+
+        // Reset player position and health
+        m_game_state.player->set_position(INIT_PLAYER_POSITION);
+        m_game_state.player->set_health(100);  // Reset health to full
+
+        // If no lives left, go to lose scene
+        if (*lives <= 0) {
+            m_game_state.next_scene_id = 4;
+            *lives = 3;  // Reset lives for next game
+            return;
+        }
+    }
+
+
     enemy_attack_cooldown -= delta_time;
     if (m_bullet->get_position().x <= -5.0f || m_bullet->get_position().x >= 20.0f || m_bullet->get_position().y <= -20.0f || m_bullet->get_position().y >= 20.0f) {
         m_bullet->deactivate(); // deactivate if the bullet goes out of bounds
