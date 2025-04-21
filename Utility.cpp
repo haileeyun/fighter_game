@@ -8,6 +8,7 @@
 #include "Utility.h"
 #include <SDL_image.h>
 #include "stb_image.h"
+#include <windows.h>
 
 GLuint Utility::load_texture(const char* filepath) {
     int width, height, number_of_components;
@@ -16,6 +17,9 @@ GLuint Utility::load_texture(const char* filepath) {
     if (image == NULL)
     {
         LOG("Unable to load image. Make sure the path is correct.");
+        std::string debugMessage = "Debug message: " + std::string(filepath) + "\n";
+        OutputDebugStringA(debugMessage.c_str());
+
         assert(false);
     }
 

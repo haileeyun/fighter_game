@@ -11,7 +11,9 @@
 
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
-
+static int DAMAGE_TO_ENEMY = 50;
+static float ENEMY_SPEED = 2.0f;
+static float PLAYER_SPEED = 3.0f;
 
 
 static bool damage_applied = false;
@@ -52,36 +54,30 @@ void LevelC::initialise()
 
     // PLAYER CODE
 
-    GLuint idle_texture = Utility::load_texture("assets/idle.png");
-    GLuint run_left_texture = Utility::load_texture("assets/run_left.png");
-    GLuint run_right_texture = Utility::load_texture("assets/run_right.png");
-    GLuint jump_texture = Utility::load_texture("assets/jump.png");
-    GLuint fall_texture = Utility::load_texture("assets/fall.png");
-    GLuint attack_texture = Utility::load_texture("assets/attack.png");
-    GLuint hurt_texture = Utility::load_texture("assets/hurt.png");
+    GLuint idle_texture = Utility::load_texture("assets/metal_idle (2).png");
+    GLuint run_left_texture = Utility::load_texture("assets/metal_run_left (2).png");
+    GLuint run_right_texture = Utility::load_texture("assets/metal_run_right (2).png");
+    GLuint jump_texture = Utility::load_texture("assets/metal_jump (2).png");
+    GLuint fall_texture = Utility::load_texture("assets/metal_fall (2).png");
+    GLuint attack_texture = Utility::load_texture("assets/metal_basic_attack (2).png");
+    GLuint hurt_texture = Utility::load_texture("assets/metal_hurt (2).png");
 
 
     glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
 
-    m_game_state.player = new Entity(
-        idle_texture,
-        5.0f,
-        glm::vec3(0.0f, -9.8f, 0.0f),
-        7.0f,
-        1.5f,
-        1.8f,
-        PLAYER);
+    m_game_state.player = new Entity(idle_texture, PLAYER_SPEED, glm::vec3(0.0f, -9.8f, 0.0f), 5.0f, 1.0f, 1.8f, PLAYER);
+
 
     m_game_state.player->set_scale(2.0f);
 
-    m_game_state.player->add_animation_texture(STATE_IDLE, idle_texture, 4, 1);
+    m_game_state.player->add_animation_texture(STATE_IDLE, idle_texture, 8, 1);
     m_game_state.player->add_animation_texture(STATE_RUNNING_LEFT, run_left_texture, 8, 1);
     m_game_state.player->add_animation_texture(STATE_RUNNING_RIGHT, run_right_texture, 8, 1);
     m_game_state.player->add_animation_texture(STATE_JUMPING, jump_texture, 3, 1);
-    m_game_state.player->add_animation_texture(STATE_FALLING, fall_texture, 2, 1);
+    m_game_state.player->add_animation_texture(STATE_FALLING, fall_texture, 3, 1);
     m_game_state.player->add_animation_texture(STATE_ATTACKING, attack_texture, 8, 1);
-    m_game_state.player->add_animation_texture(STATE_HURT, hurt_texture, 1, 1);
+    m_game_state.player->add_animation_texture(STATE_HURT, hurt_texture, 6, 1);
 
     // Set initial state
     m_game_state.player->set_animation_state(STATE_IDLE);
@@ -237,25 +233,6 @@ void LevelC::render(ShaderProgram* program)
     for (int i = 0; i < ENEMY_COUNT; i++) {
         m_game_state.enemies[i].render(program);
     }
-
-
-
-    /*if (lives != nullptr) {
-        std::string lives_text = "Lives: " + std::to_string(*lives);
-        Utility::draw_text(program, Utility::load_texture("assets/font_sheet2.png"),
-            lives_text, 0.5f, 0.0f, glm::vec3(12.0f, -0.5f, -0.5f));
-    } */
-
-    // Display health and super stats
-    //std::string health_text = "Health: " + std::to_string(m_game_state.player->get_health());
-    //Utility::draw_text(program, m_font_texture_id, health_text, 0.5f, 0.0f, glm::vec3(0.5f, -0.5f, 0.0f));
-
-    /*std::string super_text = "Super: " + std::to_string(m_game_state.player_super);
-    Utility::draw_text(program, m_font_texture_id, super_text, 0.5f, 0.0f, glm::vec3(0.5f, -1.2f, 0.0f));*/
-
-
-    //std::string enemy_health_text = "Enemy: " + std::to_string(m_game_state.enemies[0].get_health());
-    //Utility::draw_text(program, m_font_texture_id, enemy_health_text, 0.5f, 0.0f, glm::vec3(7.0f, -0.5f, 0.0f));
 
 
 

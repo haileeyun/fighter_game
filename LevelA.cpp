@@ -1,6 +1,7 @@
 #include "LevelA.h"
 #include "Utility.h"
 #include "Entity.h"
+#include <windows.h>
 
 
 #define LEVEL_WIDTH 15
@@ -45,6 +46,8 @@ LevelA::~LevelA()
 
 void LevelA::initialise()
 {
+    //OutputDebugString("Debug message\n");
+
     m_game_state.next_scene_id = -1;
 
     // initialize map
@@ -55,29 +58,30 @@ void LevelA::initialise()
 
     // PLAYER CODE
 
-    GLuint idle_texture = Utility::load_texture("assets/idle.png");
-    GLuint run_left_texture = Utility::load_texture("assets/run_left.png");
-    GLuint run_right_texture = Utility::load_texture("assets/run_right.png");
-    GLuint jump_texture = Utility::load_texture("assets/jump.png");
-    GLuint fall_texture = Utility::load_texture("assets/fall.png");
-    GLuint attack_texture = Utility::load_texture("assets/attack.png");
-    GLuint hurt_texture = Utility::load_texture("assets/hurt.png");
+    GLuint idle_texture = Utility::load_texture("assets/metal_idle (2).png");
+    GLuint run_left_texture = Utility::load_texture("assets/metal_run_left (2).png");
+    GLuint run_right_texture = Utility::load_texture("assets/metal_run_right (2).png");
+    GLuint jump_texture = Utility::load_texture("assets/metal_jump (2).png");
+    GLuint fall_texture = Utility::load_texture("assets/metal_fall (2).png");
+    GLuint attack_texture = Utility::load_texture("assets/metal_basic_attack (2).png");
+    GLuint hurt_texture = Utility::load_texture("assets/metal_hurt (2).png");
 
 
     glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
 
-    m_game_state.player = new Entity(idle_texture, PLAYER_SPEED, glm::vec3(0.0f, -9.8f, 0.0f), 7.0f, 1.5f, 1.8f, PLAYER);
+    m_game_state.player = new Entity(idle_texture, PLAYER_SPEED, glm::vec3(0.0f, -9.8f, 0.0f), 5.0f, 1.0f, 1.8f, PLAYER);
 
+    //m_game_state.player->set_scale(glm::vec3(6.0f, 3.6f, 1.0f));
     m_game_state.player->set_scale(2.0f);
 
-    m_game_state.player->add_animation_texture(STATE_IDLE, idle_texture, 4, 1);
+    m_game_state.player->add_animation_texture(STATE_IDLE, idle_texture, 8, 1);
     m_game_state.player->add_animation_texture(STATE_RUNNING_LEFT, run_left_texture, 8, 1);
     m_game_state.player->add_animation_texture(STATE_RUNNING_RIGHT, run_right_texture, 8, 1);
     m_game_state.player->add_animation_texture(STATE_JUMPING, jump_texture, 3, 1);
-    m_game_state.player->add_animation_texture(STATE_FALLING, fall_texture, 2, 1);
+    m_game_state.player->add_animation_texture(STATE_FALLING, fall_texture, 3, 1);
     m_game_state.player->add_animation_texture(STATE_ATTACKING, attack_texture, 8, 1);
-    m_game_state.player->add_animation_texture(STATE_HURT, hurt_texture, 1, 1);
+    m_game_state.player->add_animation_texture(STATE_HURT, hurt_texture, 6, 1);
 
     // Set initial state
     m_game_state.player->set_animation_state(STATE_IDLE);
