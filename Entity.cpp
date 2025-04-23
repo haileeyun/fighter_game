@@ -68,26 +68,64 @@ void Entity::ai_guard(Entity* player) {
     }
 
     float distance = glm::distance(m_position, player->get_position());
+    bool player_attacking = (player->get_animation_state() == STATE_ATTACKING);
+    bool facing_player = ((m_position.x > player->get_position().x && m_movement.x < 0) ||
+        (m_position.x < player->get_position().x && m_movement.x > 0));
 
     // follow player if within certain range
-    if (distance < 7.0f) {
-        // if close, prepare to attack
-        if (distance < 1.5f) {
-            m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+    // Defensive behaviors
+    if (player_attacking && distance < 2.0f) {
+        // Dodge roll away if player is attacking nearby
+        if (rand() % 100 < 30) { // 30% chance to dodge
+            m_movement = (m_position.x > player->get_position().x) ?
+                glm::vec3(2.5f, 0.8f, 0.0f) : // Roll right
+                glm::vec3(-2.5f, 0.8f, 0.0f); // Roll left
+            m_is_jumping = true;
+            return;
+        }
+        // Otherwise block (reduce incoming damage)
+    }
+
+    // Attack patterns
+    if (distance < 3.0f) {
+        // Close combat 
+        if (rand() % 100 < 20) { // 20% chance to attack each frame when close
+            //set_animation_state(STATE_ATTACKING);
+            m_movement = glm::vec3(0.0f);
+            return;
+        }
+    }
+    else if (distance < 7.0f) {
+        // Medium range - approach carefully
+        if (facing_player) {
+            m_movement = (m_position.x > player->get_position().x) ?
+                glm::vec3(-1.0f, 0.0f, 0.0f) : // Move left slower
+                glm::vec3(1.0f, 0.0f, 0.0f);   // Move right slower
         }
         else {
-            // Continue following player
-            if (m_position.x > player->get_position().x) {
-                m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
-            }
-            else {
-                m_movement = glm::vec3(1.0f, 0.0f, 0.0f);
-            }
+            // Face player first before moving
+            m_movement.x = (m_position.x > player->get_position().x) ? -1.0f : 1.0f;
+        }
+
+        // Occasionally jump to avoid being predictable
+        if (rand() % 100 < 20 && m_collided_bottom) {
+            m_is_jumping = true;
+            m_movement = glm::vec3(0.0f, 2.0f, 0.0f);
         }
     }
     else {
-        m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+        // Far away - move toward player more aggressively
+        m_movement = (m_position.x > player->get_position().x) ?
+            glm::vec3(-2.0f, 0.0f, 0.0f) :
+            glm::vec3(2.0f, 0.0f, 0.0f);
+
+        // Jump more often when far away
+        if (rand() % 100 < 25 && m_collided_bottom) {
+            m_is_jumping = true;
+        }
     }
+
+    
 }
 
 // probably delete this later
@@ -494,7 +532,13 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
 
     if (m_entity_type == PLAYER) {
         // handle player animation state based on movement
-        if (m_animation_state == STATE_ATTACKING) {
+        if (m_animation_state == STATE_SUPER_ATTACK) {
+            // Don't change state until animation is done
+            if (m_animation_index >= m_animation_frames - 1) {
+                set_animation_state(STATE_IDLE);
+            }
+        }
+        else if (m_animation_state == STATE_ATTACKING) {
             m_is_attacking = true;
             // reached end of attack animation
             if (m_animation_index >= m_animation_frames - 1) {
@@ -646,4 +690,41 @@ void Entity::render(ShaderProgram* program)
     }
 
     //__debugbreak();
+}
+
+
+// super stuff
+
+// In Entity.cpp
+void Entity::set_hits_needed_for_super(int hits) {
+    m_hits_needed_for_super = hits;
+    m_hits_landed = 0;
+    m_super_ready = false;
+}
+
+void Entity::set_super_damage(float damage) {
+    m_super_damage = damage;
+}
+
+void Entity::increment_hits_landed() {
+    m_hits_landed++;
+    if (m_hits_landed >= m_hits_needed_for_super) {
+        m_super_ready = true;
+        // Optional: Set a visual indicator
+        // set_animation_state(STATE_SUPER_ATTACK_READY);
+    }
+}
+
+
+
+bool Entity::is_super_ready() const {
+    return m_super_ready;
+}
+
+void Entity::use_super_attack() {
+    if (m_super_ready) {
+        set_animation_state(STATE_SUPER_ATTACK);
+        m_super_ready = false;
+        m_hits_landed = 0;
+    }
 }

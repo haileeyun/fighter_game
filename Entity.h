@@ -20,7 +20,8 @@ enum AnimationState {
     STATE_FALLING,
     STATE_ATTACKING,
     STATE_HURT,
-    STATE_DEATH
+    STATE_DEATH,
+    STATE_SUPER_ATTACK
 };
 
 class Entity
@@ -36,10 +37,16 @@ private:
     std::unordered_map<AnimationState, GLuint> m_state_textures;
     std::unordered_map<AnimationState, glm::ivec2> m_state_frames;
 
+
+
     // stats
     int m_health = 100;  // default health
     bool m_is_attacking = false;  
 
+    int m_hits_landed;          // Counter for hits landed by this entity
+    int m_hits_needed_for_super; // Hits needed to activate super (default 3)
+    bool m_super_ready;         // Flag to indicate super is ready
+    float m_super_damage;       // Damage for super attack (higher than regular)
 
     //  TRANSFORMATIONS  //
     glm::vec3 m_movement;
@@ -202,7 +209,13 @@ public:
     void ai_shoot(Entity* player);
     void shoot(glm::vec3 position, glm::vec3 direction, float speed);
 
-   
+    void set_hits_needed_for_super(int hits);
+    void set_super_damage(float damage);
+    void increment_hits_landed();
+    bool is_super_ready() const;
+    void use_super_attack();
+    int get_hits_landed() { return m_hits_landed; }
+    int get_hits_needed_for_super() { return m_hits_needed_for_super;  }
 
 };
 

@@ -201,7 +201,7 @@ void initialise()
     }
 
     // Load music once
-    g_bgm = Mix_LoadMUS("assets/drums.ogg");
+    g_bgm = Mix_LoadMUS("assets/space_music.wav");
     if (!g_bgm) {
         printf("Failed to load music: %s\n", Mix_GetError());
         OutputDebugStringA("Failed to load music\n");
@@ -257,6 +257,12 @@ void process_input()
                         g_current_scene->get_state().player->set_animation_state(STATE_ATTACKING);
                         g_current_scene->get_state().player->start_attack();
                     }
+                }
+                break;
+
+            case SDLK_s: // S key for super attack
+                if (g_current_scene->get_state().player->is_super_ready()) {
+                    g_current_scene->get_state().player->use_super_attack();
                 }
                 break;
 
@@ -432,6 +438,16 @@ void render()
 
         std::string lives_text = "Lives: " + std::to_string(*g_current_scene->lives);
         Utility::draw_text(&g_shader_program, g_font_texture_id, lives_text, 0.3f, 0.0f, glm::vec3(-4.5f, 3.25f, 0.0f));
+
+        std::string super_text = "Super: ";
+        if (g_current_scene->get_state().player->is_super_ready()) {
+            super_text += "READY!";
+        }
+        else {
+            super_text += std::to_string(g_current_scene->get_state().player->get_hits_landed()) + "/" +
+                std::to_string(g_current_scene->get_state().player->get_hits_needed_for_super());
+        }
+        Utility::draw_text(&g_shader_program, g_font_texture_id, super_text, 0.3f, 0.0f, glm::vec3(2.0f, 3.25f, 0.0f));
 
         // Enemy health in bottom right corner
         std::string enemy_health_text = "Enemy: " + std::to_string(g_current_scene->get_state().enemies[0].get_health());

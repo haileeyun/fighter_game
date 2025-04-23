@@ -12,8 +12,10 @@
 
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
-static int DAMAGE_TO_ENEMY = 50;
+static int DAMAGE_TO_ENEMY = 10;
 static int DAMAGE_TO_PLAYER = 5;
+static int PLAYER_SUPER_DAMAGE = 30;
+
 static float ENEMY_SPEED = 2.0f;
 static float PLAYER_SPEED = 3.0f;
 
@@ -66,6 +68,7 @@ void LevelA::initialise()
     GLuint fall_texture = Utility::load_texture("assets/metal_fall (2).png");
     GLuint attack_texture = Utility::load_texture("assets/metal_basic_attack (2).png");
     GLuint hurt_texture = Utility::load_texture("assets/metal_hurt (2).png");
+    GLuint super_texture = Utility::load_texture("assets/metal_super_attack (2).png");
 
 
     glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
@@ -83,6 +86,7 @@ void LevelA::initialise()
     m_game_state.player->add_animation_texture(STATE_FALLING, fall_texture, 3, 1);
     m_game_state.player->add_animation_texture(STATE_ATTACKING, attack_texture, 8, 1);
     m_game_state.player->add_animation_texture(STATE_HURT, hurt_texture, 6, 1);
+    m_game_state.player->add_animation_texture(STATE_SUPER_ATTACK, super_texture, 11, 1);
 
     // Set initial state
     m_game_state.player->set_animation_state(STATE_IDLE);
@@ -100,6 +104,8 @@ void LevelA::initialise()
     GLuint enemy_death_texture = Utility::load_texture("assets/fire_death.png");
     GLuint enemy_jump_texture = Utility::load_texture("assets/metal_jump.png");
     GLuint enemy_fall_texture = Utility::load_texture("assets/fire_fall.png");
+    GLuint enemy_super_texture = Utility::load_texture("assets/fire_super_attack.png");
+
 
 
     m_game_state.enemies = new Entity[ENEMY_COUNT];
@@ -118,6 +124,8 @@ void LevelA::initialise()
     m_game_state.enemies[0].add_animation_texture(STATE_DEATH, enemy_death_texture, 14, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_JUMPING, enemy_jump_texture, 3, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_FALLING, enemy_fall_texture, 3, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_SUPER_ATTACK, enemy_super_texture, 18, 1);
+
 
     // Set initial state
     m_game_state.enemies[0].set_animation_state(STATE_IDLE);
@@ -130,6 +138,12 @@ void LevelA::initialise()
     m_game_state.enemies[0].set_scale(2.0f);
     //m_game_state.enemies[0].set_scale(glm::vec3(6.0f, 3.6f, 1.0f)); 
 
+
+    m_game_state.player->set_hits_needed_for_super(3);
+    //m_game_state.player->set_super_damage(PLAYER_SUPER_DAMAGE); // Double damage for super
+
+    m_game_state.enemies[0].set_hits_needed_for_super(3);
+    //m_game_state.enemies[0].set_super_damage(PLAYER_SUPER_DAMAGE);
 
     /**
      BGM and SFX
@@ -170,6 +184,18 @@ void LevelA::update(float delta_time)
     for (int i = 0; i < ENEMY_COUNT; i++) {
         // Check if enemy is still active/alive
         if (m_game_state.enemies[i].get_health() <= 0) {
+            if (m_game_state.player->get_animation_state() == STATE_SUPER_ATTACK) { // super stuff, change later
+                m_game_state.player->set_scale(4.0f);
+                glm::vec3 pos = m_game_state.player->get_position();
+                m_game_state.player->set_position(glm::vec3(pos.x, -3.55f, pos.z));
+            }
+            else {
+                m_game_state.player->set_scale(2.0f);
+                
+
+            }
+            
+
             m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
 
             // If enemy is dead but not in death animation yet
@@ -187,11 +213,18 @@ void LevelA::update(float delta_time)
         else {
             // Player attacking enemy
             if (m_game_state.player->get_animation_state() == STATE_ATTACKING) {
+                //m_game_state.player->set_scale(4.0f); // attacking frames are way bigger
+                //glm::vec3 pos = m_game_state.player->get_position();
+                //m_game_state.player->set_position(glm::vec3(pos.x, -3.55f, pos.z));
+
                 if (m_game_state.player->get_animation_index() == m_game_state.player->get_animation_frames() / 2 && !damage_applied) {
                     // Apply damage once
                     if (m_game_state.player->check_attack_collision(&m_game_state.enemies[i])) {
                         m_game_state.enemies[i].damage(DAMAGE_TO_ENEMY);
                         m_game_state.enemies[i].set_animation_state(STATE_HURT);
+
+                        m_game_state.player->increment_hits_landed();
+
 
                         // Calculate knockback direction
                         glm::vec3 knockback_dir = glm::normalize(m_game_state.enemies[i].get_position() - m_game_state.player->get_position());
@@ -208,6 +241,33 @@ void LevelA::update(float delta_time)
                     damage_applied = false;
                 }
             }
+            else if (m_game_state.player->get_animation_state() == STATE_SUPER_ATTACK) {
+                m_game_state.player->set_scale(4.0f); // attacking frames are way bigger
+                glm::vec3 pos = m_game_state.player->get_position();
+                m_game_state.player->set_position(glm::vec3(pos.x, -3.55f, pos.z));
+                if (m_game_state.player->get_animation_index() == m_game_state.player->get_animation_frames() / 2 && !damage_applied) {
+                    // Apply super damage
+                    if (m_game_state.player->check_attack_collision(&m_game_state.enemies[i])) {
+                        m_game_state.enemies[i].damage(PLAYER_SUPER_DAMAGE);
+                        m_game_state.enemies[i].set_animation_state(STATE_HURT);
+
+                        // Apply stronger knockback for super attack
+                        glm::vec3 knockback_dir = glm::normalize(m_game_state.enemies[i].get_position() - m_game_state.player->get_position());
+                        knockback_dir.y = 1.5f; // Stronger upward force
+                        m_game_state.enemies[i].apply_knockback(knockback_dir, 5.0f); // Stronger knockback
+
+                        Mix_PlayChannel(1, m_game_state.punch_sfx, 0);
+                        damage_applied = true;
+                    }
+                }
+            }
+            else {
+                m_game_state.player->set_scale(2.0f);
+
+
+            }
+
+
 
             // Enemy attacking player
             if (glm::distance(m_game_state.player->get_position(), m_game_state.enemies[i].get_position()) < 2.0f) {
@@ -221,7 +281,8 @@ void LevelA::update(float delta_time)
                 if (m_game_state.enemies[i].get_animation_state() == STATE_ATTACKING && m_game_state.enemies[i].get_animation_index() == m_game_state.enemies[i].get_animation_frames() / 2) {
                     m_game_state.player->damage(DAMAGE_TO_PLAYER);
                     glm::vec3 knockback_dir = glm::normalize(m_game_state.player->get_position() - m_game_state.enemies[i].get_position());
-                    knockback_dir.y = 1.0f;
+                    //knockback_dir.y = 1.0f;
+                    m_game_state.player->set_animation_state(STATE_HURT);
                     m_game_state.player->apply_knockback(knockback_dir, 3.0f);
 
                     // If player health reaches 0, lose a life
