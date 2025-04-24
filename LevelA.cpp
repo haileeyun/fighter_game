@@ -12,7 +12,7 @@
 
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
-static int DAMAGE_TO_ENEMY = 100;
+static int DAMAGE_TO_ENEMY = 10;
 static int DAMAGE_TO_PLAYER = 10;
 static int PLAYER_SUPER_DAMAGE = 30;
 
@@ -230,8 +230,12 @@ void LevelA::update(float delta_time)
                 if (m_game_state.player->get_animation_index() == m_game_state.player->get_animation_frames() / 2 && !damage_applied) {
                     // Apply damage once
                     if (m_game_state.player->check_attack_collision(&m_game_state.enemies[i])) {
-                        m_game_state.enemies[i].damage(DAMAGE_TO_ENEMY);
-                        m_game_state.enemies[i].set_animation_state(STATE_HURT);
+                        m_game_state.enemies[i].damage(DAMAGE_TO_ENEMY); 
+                        // dont want to interrupt the super attack animation
+                        if (m_game_state.enemies[0].get_animation_state() != STATE_SUPER_ATTACK) {
+                            m_game_state.enemies[i].set_animation_state(STATE_HURT);
+
+                        }
 
                         m_game_state.player->increment_hits_landed();
 
