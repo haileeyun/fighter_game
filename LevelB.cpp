@@ -12,7 +12,7 @@
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
 static float BULLET_SPEED = 20.0f;
-static int DAMAGE_TO_ENEMY = 20;
+static int DAMAGE_TO_ENEMY = 10;
 static int DAMAGE_TO_PLAYER = 10;
 static float ENEMY_SPEED = 2.0f;
 static float PLAYER_SPEED = 3.0f;
@@ -128,8 +128,9 @@ void LevelB::initialise()
 
 
     m_game_state.enemies[0].set_position(INIT_ENEMY_POSITION);
+    m_game_state.enemies[0].set_velocity(glm::vec3(0.0f, 0.0f, 0.0f));
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
-    m_game_state.enemies[0].activate();
+    m_game_state.enemies[0].set_movement(glm::vec3(0.0f, 0.0f, 0.0f));
     m_game_state.enemies[0].set_scale(2.0f);
     //m_game_state.enemies[0].set_scale(glm::vec3(6.0f, 2.0f, 1.0f));
 

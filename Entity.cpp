@@ -74,11 +74,11 @@ void Entity::ai_guard(Entity* player) {
     // Defensive behaviors
     if (player_attacking && distance < 1.0f) {
         // Dodge roll away if player is attacking nearby
-        if (rand() % 100 < 30) { // 30% chance to dodge
+        if (rand() % 100 < 10) { // 
             m_movement = (m_position.x > player->get_position().x) ?
-                glm::vec3(1.0f, 0.8f, 0.0f) : // Roll right
-                glm::vec3(-1.0f, 0.8f, 0.0f); // Roll left
-            m_is_jumping = true;
+                glm::vec3(1.0f, 0.0f, 0.0f) : // Roll right
+                glm::vec3(-1.0f, 0.0f, 0.0f); // Roll left
+            //m_is_jumping = true;
             return;
         }
         // Otherwise block (reduce incoming damage)
@@ -146,12 +146,12 @@ void Entity::ai_shoot(Entity* player) {
     if ((near_left_edge || near_right_edge) && distance < 3.0f) {
         // Determine jump direction (away from the edge)
         if (near_left_edge) {
-            m_movement = glm::vec3(1.0f, 1.0f, 0.0f); // Jump right
+            m_movement = glm::vec3(1.0f, 0.0f, 0.0f); // Jump right
         }
         else if (near_right_edge) {
-            m_movement = glm::vec3(-1.0f, 1.0f, 0.0f); // Jump left
+            m_movement = glm::vec3(-1.0f, 0.0f, 0.0f); // Jump left
         }
-        m_is_jumping = true; // Trigger jump
+        //m_is_jumping = true; // Trigger jump
         return;
     }
 

@@ -205,7 +205,21 @@ public:
     // etc
     bool check_attack_collision(Entity* other) const;
     void apply_knockback(glm::vec3 direction, float force) {
-        m_velocity = direction * force;
+        // Safety check for zero vector
+        if (glm::length(direction) < 0.0001f) {
+            direction = glm::vec3(1.0f, 1.0f, 0.0f); // Default direction if positions are identical
+        }
+
+        // Ensure direction is normalized
+        direction = glm::normalize(direction);
+
+        // Apply force with velocity cap
+        const float MAX_KNOCKBACK_VELOCITY = 10.0f; // Adjust this value based on your game's scale
+        m_velocity = direction * std::min(force, MAX_KNOCKBACK_VELOCITY);
+
+        // Debug output for monitoring
+        // OutputDebugStringA(("Knockback: Vel=(" + std::to_string(m_velocity.x) + "," + 
+        //                     std::to_string(m_velocity.y) + "," + std::to_string(m_velocity.z) + ")\n").c_str());
     }
     void ai_shoot(Entity* player);
     void shoot(glm::vec3 position, glm::vec3 direction, float speed);

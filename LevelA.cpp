@@ -134,8 +134,9 @@ void LevelA::initialise()
 
 
     m_game_state.enemies[0].set_position(INIT_ENEMY_POSITION);
+    m_game_state.enemies[0].set_velocity(glm::vec3(0.0f, 0.0f, 0.0f));
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
-    m_game_state.enemies[0].activate();
+    m_game_state.enemies[0].set_movement(glm::vec3(0.0f, 0.0f, 0.0f));
     m_game_state.enemies[0].set_scale(2.0f);
     //m_game_state.enemies[0].set_scale(glm::vec3(6.0f, 3.6f, 1.0f)); 
 
@@ -158,7 +159,7 @@ void LevelA::update(float delta_time)
     
 
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
-    //OutputDebugStringA((std::to_string(m_game_state.player->get_position().y) + "\n").c_str());
+    OutputDebugStringA((std::to_string(m_game_state.enemies[0].get_position().y) + "\n").c_str());
 
 
     // Check if player has fallen off the platform
@@ -238,7 +239,7 @@ void LevelA::update(float delta_time)
                         // Calculate knockback direction
                         glm::vec3 knockback_dir = glm::normalize(m_game_state.enemies[i].get_position() - m_game_state.player->get_position());
                         knockback_dir.y = 1.0f; // Add some upward force
-                        m_game_state.enemies[i].apply_knockback(knockback_dir, 3.0f);
+                        //m_game_state.enemies[i].apply_knockback(knockback_dir, 3.0f);
 
                         Mix_PlayChannel(1, m_game_state.punch_sfx, 0);
                         damage_applied = true;
@@ -264,7 +265,7 @@ void LevelA::update(float delta_time)
                         // Apply stronger knockback for super attack
                         glm::vec3 knockback_dir = glm::normalize(m_game_state.enemies[i].get_position() - m_game_state.player->get_position());
                         knockback_dir.y = 1.5f; // Stronger upward force
-                        m_game_state.enemies[i].apply_knockback(knockback_dir, 5.0f); // Stronger knockback
+                        //m_game_state.enemies[i].apply_knockback(knockback_dir, 5.0f); // Stronger knockback
 
                         Mix_PlayChannel(1, m_game_state.punch_sfx, 0);
                         damage_applied = true;
@@ -289,14 +290,8 @@ void LevelA::update(float delta_time)
                 if (enemy_attack_cooldown <= 0) {
 
                     if (m_game_state.enemies[i].is_super_ready()) {
-                        //OutputDebugStringA("Enemy super ready\n");
-                        /*m_game_state.enemies[i].set_scale(4.0f);
-                        glm::vec3 pos = m_game_state.enemies[i].get_position();
-                        m_game_state.enemies[i].set_position(glm::vec3(pos.x, -3.5f, pos.z));*/
                         m_game_state.enemies[i].use_super_attack();
-                        
                         enemy_attack_cooldown = 3.0f;
-
                     }
                     else {
                         m_game_state.enemies[i].set_animation_state(STATE_ATTACKING);
@@ -314,21 +309,17 @@ void LevelA::update(float delta_time)
                         //knockback_dir.y = 1.0f;
                         m_game_state.player->set_animation_state(STATE_HURT);
                         m_game_state.enemies[i].increment_hits_landed();
-                        m_game_state.player->apply_knockback(knockback_dir, 3.0f);
+                        //m_game_state.player->apply_knockback(knockback_dir, 3.0f);
                         damage_applied_to_player = true;
                     }
                 }
                 // if the enemy is SUPER attacking, scale and reposition
                 else if (m_game_state.enemies[0].get_animation_state() == STATE_SUPER_ATTACK) {
-                    /*m_game_state.enemies[i].set_scale(4.0f);
-                    glm::vec3 pos = m_game_state.enemies[i].get_position();
-                    m_game_state.enemies[i].set_position(glm::vec3(pos.x, -3.5f, pos.z));*/
-                    // apply damage in the middle of the attack
                     if (m_game_state.enemies[0].get_animation_index() == m_game_state.enemies[0].get_animation_frames() / 2 && !damage_applied_to_player) {
                         m_game_state.player->damage(PLAYER_SUPER_DAMAGE);
                         m_game_state.player->set_animation_state(STATE_HURT);
                         glm::vec3 knockback_dir = glm::normalize(m_game_state.player->get_position() - m_game_state.enemies[i].get_position());
-                        m_game_state.player->apply_knockback(knockback_dir, 3.0f);
+                        //m_game_state.player->apply_knockback(knockback_dir, 3.0f);
                         damage_applied_to_player = true;
                     }
                     // if at the end SUPER attack, reset scale
@@ -349,8 +340,7 @@ void LevelA::update(float delta_time)
                 // Reset flag when attack animation is done
                 if (m_game_state.enemies[0].get_animation_index() >= m_game_state.enemies[0].get_animation_frames() - 1) {
                     damage_applied_to_player = false;
-                    //m_game_state.enemies[i].set_acceleration(original_accel);
-                    //m_game_state.enemies[i].set_scale(2.0f);
+           
 
                 }
 
@@ -376,8 +366,6 @@ void LevelA::update(float delta_time)
             }
          
 
-            // Update enemy
-            //m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
         }
     }
 
@@ -394,24 +382,6 @@ void LevelA::render(ShaderProgram* program)
         m_game_state.enemies[i].render(program);
     }
 
-
-
-    /*if (lives != nullptr) {
-        std::string lives_text = "Lives: " + std::to_string(*lives);
-        Utility::draw_text(program, Utility::load_texture("assets/font_sheet2.png"),
-            lives_text, 0.5f, 0.0f, glm::vec3(12.0f, -0.5f, -0.5f));
-    } */
-
-    // Display health and super stats
-    //std::string health_text = "Health: " + std::to_string(m_game_state.player->get_health());
-    //Utility::draw_text(program, m_font_texture_id, health_text, 0.5f, 0.0f, glm::vec3(0.5f, -0.5f, 0.0f));
-
-    /*std::string super_text = "Super: " + std::to_string(m_game_state.player_super);
-    Utility::draw_text(program, m_font_texture_id, super_text, 0.5f, 0.0f, glm::vec3(0.5f, -1.2f, 0.0f));*/
-
-        
-    //std::string enemy_health_text = "Enemy: " + std::to_string(m_game_state.enemies[0].get_health());
-    //Utility::draw_text(program, m_font_texture_id, enemy_health_text, 0.5f, 0.0f, glm::vec3(7.0f, -0.5f, 0.0f));
         
     
 
