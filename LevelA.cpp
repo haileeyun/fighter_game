@@ -161,6 +161,8 @@ void LevelA::update(float delta_time)
     
 
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
+    //OutputDebugStringA((std::to_string(m_game_state.player->get_position().y) + "\n").c_str());
+
 
     // Check if player has fallen off the platform
     if (m_game_state.player->get_position().y < -15.0f) {  
@@ -336,7 +338,10 @@ void LevelA::update(float delta_time)
                     else if (m_game_state.enemies[0].get_animation_index() >= m_game_state.enemies[0].get_animation_frames() - 1) {
                         damage_applied_to_player = false;
                         glm::vec3 pos = m_game_state.enemies[i].get_position();
-                        m_game_state.enemies[i].set_position(glm::vec3(pos.x, -4.1f, 0.0f));
+                        m_game_state.enemies[i].set_scale(2.0f);
+
+                        m_game_state.enemies[i].set_position(glm::vec3(pos.x, -4.6f, 0.0f));
+                        m_game_state.enemies[i].set_velocity(glm::vec3(0.0f, 0.0f, 0.0f));
                     }
                     
                 }
