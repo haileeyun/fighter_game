@@ -8,7 +8,7 @@
 
 enum EntityType { PLATFORM, PLAYER, ENEMY, PROJECTILE };
 
-enum AIType { WALKER, GUARD, FLYER, SHOOTER };
+enum AIType { WALKER, GUARD, SHOOTER };
 //enum AIState { AI_WALKING, AI_IDLE, AI_ATTACKING, AI_HURT, AI_DEATH };
 
 enum AnimationState {
@@ -132,7 +132,6 @@ public:
     void ai_activate(Entity* player);
     void ai_walk();
     void ai_guard(Entity* player);
-    void ai_fly();
 
     void const check_collision_with_enemies(Entity* enemies, int enemy_count);
 
