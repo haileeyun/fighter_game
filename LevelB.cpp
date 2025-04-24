@@ -93,7 +93,7 @@ void LevelB::initialise()
     GLuint enemy_idle_texture = Utility::load_texture("assets/water_idle (2).png");
     GLuint enemy_run_left_texture = Utility::load_texture("assets/water_walk_left.png");
     GLuint enemy_run_right_texture = Utility::load_texture("assets/water_walk_right.png");
-    GLuint enemy_attack_texture = Utility::load_texture("assets/water_basic_attack (2).png");
+    GLuint enemy_attack_texture = Utility::load_texture("assets/water_basic_attack (3).png");
     GLuint enemy_hurt_texture = Utility::load_texture("assets/water_hurt (2).png");
     GLuint enemy_death_texture = Utility::load_texture("assets/water_death (2).png");
 
@@ -109,7 +109,7 @@ void LevelB::initialise()
     m_game_state.enemies[0].add_animation_texture(STATE_IDLE, enemy_idle_texture, 8, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_RUNNING_LEFT, enemy_run_left_texture, 10, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_RUNNING_RIGHT, enemy_run_right_texture, 10, 1);
-    m_game_state.enemies[0].add_animation_texture(STATE_ATTACKING, enemy_attack_texture, 21, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_ATTACKING, enemy_attack_texture, 7, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_HURT, enemy_hurt_texture, 7, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_DEATH, enemy_death_texture, 16, 1);
 
@@ -266,10 +266,14 @@ void LevelB::update(float delta_time)
                     if (m_game_state.player->get_position().x < m_game_state.enemies[i].get_position().x) {
                         bullet_pos.x -= 0.5f;
                         direction = glm::vec3(-1.0f, 0.0f, 0.0f);
+                        m_bullet->set_scale(glm::vec3(0.5f, 0.5f, 1.0f)); // normal orientation
+
                     }
                     else {
                         bullet_pos.x += 0.5f;
                         direction = glm::vec3(1.0f, 0.0f, 0.0f);
+                        m_bullet->set_scale(glm::vec3(-0.5f, 0.5f, 1.0f)); // Flip horizontally
+
                     }
                     // activate the bullet, shoot it
                     m_bullet->activate();

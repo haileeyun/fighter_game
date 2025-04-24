@@ -12,8 +12,8 @@
 
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
-static int DAMAGE_TO_ENEMY = 10;
-static int DAMAGE_TO_PLAYER = 1;
+static int DAMAGE_TO_ENEMY = 100;
+static int DAMAGE_TO_PLAYER = 10;
 static int PLAYER_SUPER_DAMAGE = 30;
 
 static float ENEMY_SPEED = 2.0f;
