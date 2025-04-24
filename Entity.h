@@ -217,6 +217,7 @@ public:
     int get_hits_landed() { return m_hits_landed; }
     int get_hits_needed_for_super() { return m_hits_needed_for_super;  }
 
+
 };
 
 #endif // ENTITY_H

@@ -23,7 +23,7 @@ void Entity::ai_activate(Entity* player)
         m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
         return;
     }
-    if (m_animation_state == STATE_ATTACKING) {
+    if (m_animation_state == STATE_ATTACKING || m_animation_state == STATE_SUPER_ATTACK) {
         // If the attack animation is done, return to idle
         if (m_animation_index >= m_animation_frames - 1) {
             set_animation_state(STATE_IDLE);
@@ -62,7 +62,8 @@ void Entity::ai_guard(Entity* player) {
     // Don't change behavior if in a special animation state
     if (m_animation_state == STATE_ATTACKING ||
         m_animation_state == STATE_HURT ||
-        m_animation_state == STATE_DEATH) {
+        m_animation_state == STATE_DEATH || 
+        m_animation_state == STATE_SUPER_ATTACK) {
         m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
         return;
     }
@@ -74,12 +75,12 @@ void Entity::ai_guard(Entity* player) {
 
     // follow player if within certain range
     // Defensive behaviors
-    if (player_attacking && distance < 2.0f) {
+    if (player_attacking && distance < 1.0f) {
         // Dodge roll away if player is attacking nearby
         if (rand() % 100 < 30) { // 30% chance to dodge
             m_movement = (m_position.x > player->get_position().x) ?
-                glm::vec3(2.5f, 0.8f, 0.0f) : // Roll right
-                glm::vec3(-2.5f, 0.8f, 0.0f); // Roll left
+                glm::vec3(1.0f, 0.8f, 0.0f) : // Roll right
+                glm::vec3(-1.0f, 0.8f, 0.0f); // Roll left
             m_is_jumping = true;
             return;
         }
@@ -108,10 +109,10 @@ void Entity::ai_guard(Entity* player) {
         }
 
         // Occasionally jump to avoid being predictable
-        if (rand() % 100 < 20 && m_collided_bottom) {
+        /*if (rand() % 100 < 20 && m_collided_bottom) {
             m_is_jumping = true;
             m_movement = glm::vec3(0.0f, 2.0f, 0.0f);
-        }
+        }*/
     }
     else {
         // Far away - move toward player more aggressively
@@ -120,9 +121,9 @@ void Entity::ai_guard(Entity* player) {
             glm::vec3(2.0f, 0.0f, 0.0f);
 
         // Jump more often when far away
-        if (rand() % 100 < 25 && m_collided_bottom) {
+        /*if (rand() % 100 < 25 && m_collided_bottom) {
             m_is_jumping = true;
-        }
+        }*/
     }
 
     
@@ -533,9 +534,13 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     if (m_entity_type == PLAYER) {
         // handle player animation state based on movement
         if (m_animation_state == STATE_SUPER_ATTACK) {
+            m_is_attacking = true;
+
             // Don't change state until animation is done
             if (m_animation_index >= m_animation_frames - 1) {
                 set_animation_state(STATE_IDLE);
+                m_is_attacking = false;
+
             }
         }
         else if (m_animation_state == STATE_ATTACKING) {
@@ -565,10 +570,12 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
         }
     }
     else if (m_entity_type == ENEMY) {
+
         // Only call AI if not in a special state
         if (m_animation_state != STATE_ATTACKING &&
             m_animation_state != STATE_HURT &&
-            m_animation_state != STATE_DEATH) {
+            m_animation_state != STATE_DEATH &&
+            m_animation_state != STATE_SUPER_ATTACK) {
             ai_activate(player);
 
             // Set movement animations only if not in a special state
@@ -589,9 +596,14 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
             }
         }
         // Check if special animations have completed
-        else if ((m_animation_state == STATE_ATTACKING || m_animation_state == STATE_HURT) &&
+        else if ((m_animation_state == STATE_ATTACKING || m_animation_state == STATE_HURT || m_animation_state == STATE_SUPER_ATTACK) &&
             m_animation_index >= m_animation_frames - 1) {
             set_animation_state(STATE_IDLE);
+        }
+        if (m_animation_state == STATE_IDLE) {
+            set_scale(2.0f);  // Reset enemy to normal scale immediately after super finishes
+            //glm::vec3 pos = get_position();
+            //set_position(glm::vec3(pos.x, -2.9f, pos.z));
         }
     }
 
@@ -722,9 +734,8 @@ bool Entity::is_super_ready() const {
 }
 
 void Entity::use_super_attack() {
-    if (m_super_ready) {
-        set_animation_state(STATE_SUPER_ATTACK);
-        m_super_ready = false;
-        m_hits_landed = 0;
-    }
+    set_animation_state(STATE_SUPER_ATTACK);
+    m_super_ready = false;
+    m_hits_landed = 0;
+    
 }
