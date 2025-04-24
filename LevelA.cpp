@@ -189,9 +189,9 @@ void LevelA::update(float delta_time)
     for (int i = 0; i < ENEMY_COUNT; i++) {
         m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
         if (m_game_state.enemies[0].get_animation_state() == STATE_SUPER_ATTACK) {
-            m_game_state.enemies[0].set_scale(4.0f);
+            m_game_state.enemies[0].set_scale(3.65f);
             glm::vec3 pos = m_game_state.enemies[0].get_position();
-            m_game_state.enemies[0].set_position(glm::vec3(pos.x, -3.55f, pos.z));
+            m_game_state.enemies[0].set_position(glm::vec3(pos.x, -3.75f, pos.z));
         }
         else {
             m_game_state.enemies[0].set_scale(2.0f);
