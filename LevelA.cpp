@@ -141,10 +141,7 @@ void LevelA::initialise()
 
 
     m_game_state.player->set_hits_needed_for_super(3);
-    //m_game_state.player->set_super_damage(PLAYER_SUPER_DAMAGE); // Double damage for super
-
     m_game_state.enemies[0].set_hits_needed_for_super(3);
-    //m_game_state.enemies[0].set_super_damage(PLAYER_SUPER_DAMAGE);
 
     /**
      BGM and SFX

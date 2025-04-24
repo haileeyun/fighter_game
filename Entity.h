@@ -77,6 +77,8 @@ private:
     float m_width = 1.0f,
         m_height = 1.0f;
 
+    bool m_is_super = false;
+
     //  COLLISIONS //
     bool m_collided_top = false;
     bool m_collided_bottom = false;
@@ -216,6 +218,9 @@ public:
     void use_super_attack();
     int get_hits_landed() { return m_hits_landed; }
     int get_hits_needed_for_super() { return m_hits_needed_for_super;  }
+
+    void set_is_super(bool is_super) { m_is_super = is_super; }
+    bool is_super() const { return m_is_super; }
 
 
 };

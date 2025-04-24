@@ -152,7 +152,7 @@ void Entity::ai_fly()
 void Entity::ai_shoot(Entity* player) {
     if (m_animation_state == STATE_ATTACKING ||
         m_animation_state == STATE_HURT ||
-        m_animation_state == STATE_DEATH) {
+        m_animation_state == STATE_DEATH || m_animation_state == STATE_SUPER_ATTACK) {
         m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
         return;
     }
