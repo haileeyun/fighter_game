@@ -251,6 +251,8 @@ void LevelB::update(float delta_time)
             m_game_state.enemies[0].set_scale(3.65f);
             glm::vec3 pos = m_game_state.enemies[0].get_position();
             m_game_state.enemies[0].set_position(glm::vec3(pos.x, -3.75f, pos.z));
+            m_game_state.enemies[0].set_movement(glm::vec3(0.0f));
+
         }
         else {
             m_game_state.enemies[0].set_scale(2.0f);

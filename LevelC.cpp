@@ -222,6 +222,8 @@ void LevelC::update(float delta_time)
             m_game_state.enemies[0].set_scale(3.65f);
             glm::vec3 pos = m_game_state.enemies[0].get_position();
             m_game_state.enemies[0].set_position(glm::vec3(pos.x, -3.75f, pos.z));
+            m_game_state.enemies[0].set_movement(glm::vec3(0.0f));
+
 
             // Activate lightning at start of super attack
             if (m_game_state.enemies[0].get_animation_index() == 0 && !lightning_active) {

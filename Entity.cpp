@@ -27,6 +27,8 @@ void Entity::ai_activate(Entity* player)
     }
     if (m_animation_state == STATE_ATTACKING || m_animation_state == STATE_SUPER_ATTACK) {
         // If the attack animation is done, return to idle
+        m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+
         if (m_animation_index >= m_animation_frames - 1) {
             set_animation_state(STATE_IDLE);
         }
