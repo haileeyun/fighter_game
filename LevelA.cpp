@@ -12,7 +12,7 @@
 
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
-static int DAMAGE_TO_ENEMY = 100;
+static int DAMAGE_TO_ENEMY = 10;
 static int DAMAGE_TO_PLAYER = 10;
 static int PLAYER_SUPER_DAMAGE = 30;
 
@@ -33,8 +33,8 @@ unsigned int LEVELA_DATA[] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 1, 4, 4, 4, 4, 4, 4, 4, 4, 3, 0, 0,
-    0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0,
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
@@ -56,7 +56,7 @@ void LevelA::initialise()
 
     // initialize map
 
-    GLuint map_texture_id = Utility::load_texture("assets/grass_tiles.png");
+    GLuint map_texture_id = Utility::load_texture("assets/blocks.png");
     m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELA_DATA, map_texture_id, 1.0f, 5, 1);
 
 
