@@ -180,6 +180,14 @@ void LevelB::update(float delta_time)
             return;
         }
     }
+    if (m_game_state.enemies[0].get_position().y < -15.0f) {
+        m_game_state.enemies[0].set_position(INIT_ENEMY_POSITION);
+        m_game_state.enemies[0].set_velocity(glm::vec3(0.0f, 0.0f, 0.0f));
+        m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
+        m_game_state.enemies[0].set_movement(glm::vec3(0.0f, 0.0f, 0.0f));
+        m_game_state.enemies[0].set_scale(2.0f);
+
+    }
 
 
     enemy_attack_cooldown -= delta_time;
@@ -190,7 +198,7 @@ void LevelB::update(float delta_time)
 
     // check if bullet hits the player
     if (m_bullet->is_active()) {
-        if (m_game_state.player->check_collision(m_bullet) && !damage_applied) {
+        if (m_game_state.player->check_collision(m_bullet) && !damage_applied_to_player) {
             // subtract health, deactivate bullet, dont render, reset position?
             if (m_bullet->is_super()) {
                 m_game_state.player->damage(PLAYER_SUPER_DAMAGE);
@@ -199,7 +207,7 @@ void LevelB::update(float delta_time)
                 m_game_state.player->damage(DAMAGE_TO_PLAYER);
             }
             m_game_state.enemies[0].increment_hits_landed();
-            damage_applied = true;
+            damage_applied_to_player = true;
             
 
 
@@ -229,7 +237,7 @@ void LevelB::update(float delta_time)
 
         }
         else if (!m_game_state.player->check_collision(m_bullet)) {
-            damage_applied = false;
+            damage_applied_to_player = false;
         }
     }
 
@@ -281,7 +289,7 @@ void LevelB::update(float delta_time)
                     if (m_game_state.player->check_attack_collision(&m_game_state.enemies[i])) {
                         m_game_state.enemies[i].damage(DAMAGE_TO_ENEMY);
                         // dont want to interrupt the super attack animation
-                        if (m_game_state.enemies[0].get_animation_state() != STATE_SUPER_ATTACK) {
+                        if (m_game_state.enemies[0].get_animation_state() != STATE_SUPER_ATTACK && m_game_state.enemies[0].get_animation_state() != STATE_ATTACKING) {
                             m_game_state.enemies[i].set_animation_state(STATE_HURT);
 
                         }
@@ -290,13 +298,14 @@ void LevelB::update(float delta_time)
 
                         // Calculate knockback direction
                         glm::vec3 knockback_dir = glm::normalize(m_game_state.enemies[i].get_position() - m_game_state.player->get_position());
-                        knockback_dir.y = 1.0f; // Add some upward force
-                        m_game_state.enemies[i].apply_knockback(knockback_dir, 3.0f);
+                        //knockback_dir.y = 1.0f; // Add some upward force
+                        //m_game_state.enemies[i].apply_knockback(knockback_dir, 3.0f);
 
                         Mix_PlayChannel(1, m_game_state.punch_sfx, 0);
                         damage_applied = true;
                     }
-                }
+                } 
+                
 
                 // Reset flag when attack animation is done
                 if (m_game_state.player->get_animation_index() >= m_game_state.player->get_animation_frames() - 1) {

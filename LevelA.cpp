@@ -12,7 +12,7 @@
 
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
-static int DAMAGE_TO_ENEMY = 10;
+static int DAMAGE_TO_ENEMY = 100;
 static int DAMAGE_TO_PLAYER = 10;
 static int PLAYER_SUPER_DAMAGE = 30;
 
@@ -178,6 +178,14 @@ void LevelA::update(float delta_time)
             return;
         }
     }
+    if (m_game_state.enemies[0].get_position().y < -15.0f) {
+        m_game_state.enemies[0].set_position(INIT_ENEMY_POSITION);
+        m_game_state.enemies[0].set_velocity(glm::vec3(0.0f, 0.0f, 0.0f));
+        m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
+        m_game_state.enemies[0].set_movement(glm::vec3(0.0f, 0.0f, 0.0f));
+        m_game_state.enemies[0].set_scale(2.0f);
+
+    }
 
   
     // cooldown so the enemy doesn't spam attack me    
@@ -232,7 +240,7 @@ void LevelA::update(float delta_time)
                     if (m_game_state.player->check_attack_collision(&m_game_state.enemies[i])) {
                         m_game_state.enemies[i].damage(DAMAGE_TO_ENEMY); 
                         // dont want to interrupt the super attack animation
-                        if (m_game_state.enemies[0].get_animation_state() != STATE_SUPER_ATTACK) {
+                        if (m_game_state.enemies[0].get_animation_state() != STATE_SUPER_ATTACK && m_game_state.enemies[0].get_animation_state() != STATE_ATTACKING) {
                             m_game_state.enemies[i].set_animation_state(STATE_HURT);
 
                         }
