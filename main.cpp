@@ -151,7 +151,7 @@ void initialise()
     glUseProgram(g_shader_program.get_program_id());
 
     //glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
-    g_background_texture = Utility::load_texture("assets/sky.png");
+    g_background_texture = Utility::load_texture("assets/purple_clouds.png");
     g_background_matrix = glm::mat4(1.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
