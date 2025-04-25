@@ -531,6 +531,12 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
                 m_is_attacking = false;
             }
         }
+        else if (m_animation_state == STATE_HURT) {
+            // Don't change state until hurt animation is done
+            if (m_animation_index >= m_animation_frames - 1) {
+                set_animation_state(STATE_IDLE);
+            }
+        }
         else if (m_velocity.y > 0.1f) {
             set_animation_state(STATE_JUMPING);
         }
