@@ -87,13 +87,14 @@ void Entity::ai_guard(Entity* player) {
     }
 
     // Attack patterns
-    if (distance < 3.0f) {
+    if (distance < 2.0f) {
         // Close combat 
-        if (rand() % 100 < 20) { // 20% chance to attack each frame when close
-            //set_animation_state(STATE_ATTACKING);
-            m_movement = glm::vec3(0.0f);
-            return;
-        }
+        //if (rand() % 100 < 20) { // 20% chance to attack each frame when close
+        //    //set_animation_state(STATE_ATTACKING);
+        //    m_movement = glm::vec3(0.0f);
+        //    return;
+        //}
+        m_movement = glm::vec3(0.0f);
     }
     else if (distance < 7.0f) {
         // Medium range - approach carefully
@@ -107,7 +108,7 @@ void Entity::ai_guard(Entity* player) {
             m_movement.x = (m_position.x > player->get_position().x) ? -1.0f : 1.0f;
         }
 
-        // Occasionally jump to avoid being predictable
+        // Occasionally jump to avoid being predictable ok maybe fix this later bc this would send then rocketing LOL
         /*if (rand() % 100 < 20 && m_collided_bottom) {
             m_is_jumping = true;
             m_movement = glm::vec3(0.0f, 2.0f, 0.0f);
