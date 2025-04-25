@@ -31,7 +31,7 @@ unsigned int LEVELB_DATA[] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0,
+    0, 0, 0, 1, 4, 4, 4, 4, 4, 4, 4, 4, 3, 0, 0,
     0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
@@ -53,7 +53,7 @@ void LevelB::initialise()
 
     // initialize map
 
-    GLuint map_texture_id = Utility::load_texture("assets/tiles.png");
+    GLuint map_texture_id = Utility::load_texture("assets/grass_tiles.png");
     m_game_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELB_DATA, map_texture_id, 1.0f, 5, 1);
 
 
