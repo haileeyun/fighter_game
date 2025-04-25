@@ -69,7 +69,7 @@ void LevelC::initialise()
     GLuint fall_texture = Utility::load_texture("assets/metal_fall (2).png");
     GLuint attack_texture = Utility::load_texture("assets/metal_basic_attack (2).png");
     GLuint hurt_texture = Utility::load_texture("assets/metal_hurt (2).png");
-    GLuint super_texture = Utility::load_texture("assets/metal_super_attack (2).png");
+    GLuint super_texture = Utility::load_texture("assets/metal_super.png");
 
 
     glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
@@ -208,9 +208,9 @@ void LevelC::update(float delta_time)
         if (m_game_state.enemies[i].get_health() <= 0) {
             // prevent weird scaling issues if the enemy dies from a player super
             if (m_game_state.player->get_animation_state() == STATE_SUPER_ATTACK) {
-                m_game_state.player->set_scale(4.0f);
+                m_game_state.player->set_scale(3.65f);
                 glm::vec3 pos = m_game_state.player->get_position();
-                m_game_state.player->set_position(glm::vec3(pos.x, -3.55f, pos.z));
+                m_game_state.player->set_position(glm::vec3(pos.x, -3.75f, pos.z));
             }
             else {
                 m_game_state.player->set_scale(2.0f);
@@ -264,9 +264,9 @@ void LevelC::update(float delta_time)
                 }
             }
             else if (m_game_state.player->get_animation_state() == STATE_SUPER_ATTACK) {
-                m_game_state.player->set_scale(4.0f); // attacking frames are way bigger
+                m_game_state.player->set_scale(3.65f); // attacking frames are way bigger
                 glm::vec3 pos = m_game_state.player->get_position();
-                m_game_state.player->set_position(glm::vec3(pos.x, -3.55f, pos.z));
+                m_game_state.player->set_position(glm::vec3(pos.x, -3.75f, pos.z));
                 if (m_game_state.player->get_animation_index() == m_game_state.player->get_animation_frames() / 2 && !damage_applied) {
                     // Apply super damage
                     if (m_game_state.player->check_attack_collision(&m_game_state.enemies[i])) {

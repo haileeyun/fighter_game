@@ -20,6 +20,7 @@ static int PLAYER_SUPER_DAMAGE = 30;
 
 
 static bool damage_applied = false;
+static bool damage_applied_to_player = false;
 
 
 unsigned int LEVELB_DATA[] =
@@ -65,7 +66,7 @@ void LevelB::initialise()
     GLuint fall_texture = Utility::load_texture("assets/metal_fall (2).png");
     GLuint attack_texture = Utility::load_texture("assets/metal_basic_attack (2).png");
     GLuint hurt_texture = Utility::load_texture("assets/metal_hurt (2).png");
-    GLuint super_texture = Utility::load_texture("assets/metal_super_attack (2).png");
+    GLuint super_texture = Utility::load_texture("assets/metal_super.png");
 
 
 
@@ -189,7 +190,7 @@ void LevelB::update(float delta_time)
 
     // check if bullet hits the player
     if (m_bullet->is_active()) {
-        if (m_game_state.player->check_collision(m_bullet)) {
+        if (m_game_state.player->check_collision(m_bullet) && !damage_applied) {
             // subtract health, deactivate bullet, dont render, reset position?
             if (m_bullet->is_super()) {
                 m_game_state.player->damage(PLAYER_SUPER_DAMAGE);
@@ -198,6 +199,8 @@ void LevelB::update(float delta_time)
                 m_game_state.player->damage(DAMAGE_TO_PLAYER);
             }
             m_game_state.enemies[0].increment_hits_landed();
+            damage_applied = true;
+            
 
 
             m_bullet->deactivate(); // deactivate
@@ -225,6 +228,9 @@ void LevelB::update(float delta_time)
             }
 
         }
+        else if (!m_game_state.player->check_collision(m_bullet)) {
+            damage_applied = false;
+        }
     }
 
 
@@ -244,7 +250,16 @@ void LevelB::update(float delta_time)
 
         // Enemy death stuff
         if (m_game_state.enemies[i].get_health() <= 0) {
-            m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
+
+            if (m_game_state.player->get_animation_state() == STATE_SUPER_ATTACK) {
+                m_game_state.player->set_scale(3.65f);
+                glm::vec3 pos = m_game_state.player->get_position();
+                m_game_state.player->set_position(glm::vec3(pos.x, -3.75f, pos.z));
+            }
+            else {
+                m_game_state.player->set_scale(2.0f);
+            }
+            //m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
 
             // If enemy is dead but not in death animation yet
             if (m_game_state.enemies[i].get_animation_state() != STATE_DEATH) {
@@ -289,9 +304,9 @@ void LevelB::update(float delta_time)
                 }
             }
             else if (m_game_state.player->get_animation_state() == STATE_SUPER_ATTACK) {
-                m_game_state.player->set_scale(4.0f); // attacking frames are way bigger
+                m_game_state.player->set_scale(3.65f); // attacking frames are way bigger
                 glm::vec3 pos = m_game_state.player->get_position();
-                m_game_state.player->set_position(glm::vec3(pos.x, -3.55f, pos.z));
+                m_game_state.player->set_position(glm::vec3(pos.x, -3.75f, pos.z));
                 if (m_game_state.player->get_animation_index() == m_game_state.player->get_animation_frames() / 2 && !damage_applied) {
                     // Apply super damage
                     if (m_game_state.player->check_attack_collision(&m_game_state.enemies[i])) {
