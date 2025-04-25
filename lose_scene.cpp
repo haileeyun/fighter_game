@@ -16,7 +16,6 @@ void LoseScene::initialise()
 {
     m_game_state.next_scene_id = -1;
 
-    //GLuint map_texture_id = Utility::load_texture("assets/tiles.png");
 
 }
 

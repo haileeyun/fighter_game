@@ -59,13 +59,13 @@ void LevelB::initialise()
 
     // PLAYER CODE
 
-    GLuint idle_texture = Utility::load_texture("assets/metal_idle (2).png");
-    GLuint run_left_texture = Utility::load_texture("assets/metal_run_left (2).png");
-    GLuint run_right_texture = Utility::load_texture("assets/metal_run_right (2).png");
-    GLuint jump_texture = Utility::load_texture("assets/metal_jump (2).png");
-    GLuint fall_texture = Utility::load_texture("assets/metal_fall (2).png");
-    GLuint attack_texture = Utility::load_texture("assets/metal_basic_attack (2).png");
-    GLuint hurt_texture = Utility::load_texture("assets/metal_hurt (2).png");
+    GLuint idle_texture = Utility::load_texture("assets/metal_idle.png");
+    GLuint run_left_texture = Utility::load_texture("assets/metal_run_left.png");
+    GLuint run_right_texture = Utility::load_texture("assets/metal_run_right.png");
+    GLuint jump_texture = Utility::load_texture("assets/metal_jump.png");
+    GLuint fall_texture = Utility::load_texture("assets/metal_fall.png");
+    GLuint attack_texture = Utility::load_texture("assets/metal_basic_attack.png");
+    GLuint hurt_texture = Utility::load_texture("assets/metal_hurt.png");
     GLuint super_texture = Utility::load_texture("assets/metal_super.png");
 
 
@@ -96,13 +96,15 @@ void LevelB::initialise()
 
     // ENEMIES
 
-    GLuint enemy_idle_texture = Utility::load_texture("assets/water_idle (2).png");
+    GLuint enemy_idle_texture = Utility::load_texture("assets/water_idle.png");
     GLuint enemy_run_left_texture = Utility::load_texture("assets/water_walk_left.png");
     GLuint enemy_run_right_texture = Utility::load_texture("assets/water_walk_right.png");
-    GLuint enemy_attack_texture = Utility::load_texture("assets/water_basic_attack (3).png");
-    GLuint enemy_hurt_texture = Utility::load_texture("assets/water_hurt (2).png");
-    GLuint enemy_death_texture = Utility::load_texture("assets/water_death (2).png");
+    GLuint enemy_attack_texture = Utility::load_texture("assets/water_basic_attack.png");
+    GLuint enemy_hurt_texture = Utility::load_texture("assets/water_hurt.png");
+    GLuint enemy_death_texture = Utility::load_texture("assets/water_death.png");
     GLuint enemy_super_texture = Utility::load_texture("assets/water_super.png");
+    GLuint enemy_jump_texture = Utility::load_texture("assets/water_jump.png");
+    GLuint enemy_fall_texture = Utility::load_texture("assets/water_fall.png");
 
 
 
@@ -121,6 +123,9 @@ void LevelB::initialise()
     m_game_state.enemies[0].add_animation_texture(STATE_HURT, enemy_hurt_texture, 7, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_DEATH, enemy_death_texture, 16, 1);
     m_game_state.enemies[0].add_animation_texture(STATE_SUPER_ATTACK, enemy_super_texture, 27, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_JUMPING, enemy_jump_texture, 3, 1);
+    m_game_state.enemies[0].add_animation_texture(STATE_FALLING, enemy_fall_texture, 3, 1);
+
 
 
     // Set initial state

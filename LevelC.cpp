@@ -66,13 +66,13 @@ void LevelC::initialise()
 
     // PLAYER CODE
 
-    GLuint idle_texture = Utility::load_texture("assets/metal_idle (2).png");
-    GLuint run_left_texture = Utility::load_texture("assets/metal_run_left (2).png");
-    GLuint run_right_texture = Utility::load_texture("assets/metal_run_right (2).png");
-    GLuint jump_texture = Utility::load_texture("assets/metal_jump (2).png");
-    GLuint fall_texture = Utility::load_texture("assets/metal_fall (2).png");
-    GLuint attack_texture = Utility::load_texture("assets/metal_basic_attack (2).png");
-    GLuint hurt_texture = Utility::load_texture("assets/metal_hurt (2).png");
+    GLuint idle_texture = Utility::load_texture("assets/metal_idle.png");
+    GLuint run_left_texture = Utility::load_texture("assets/metal_run_left.png");
+    GLuint run_right_texture = Utility::load_texture("assets/metal_run_right.png");
+    GLuint jump_texture = Utility::load_texture("assets/metal_jump.png");
+    GLuint fall_texture = Utility::load_texture("assets/metal_fall.png");
+    GLuint attack_texture = Utility::load_texture("assets/metal_basic_attack.png");
+    GLuint hurt_texture = Utility::load_texture("assets/metal_hurt.png");
     GLuint super_texture = Utility::load_texture("assets/metal_super.png");
 
 

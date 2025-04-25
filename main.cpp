@@ -339,17 +339,16 @@ void update()
             has_active_enemies = true;
         }
         if (has_active_enemies) {
-            // Calculate midpoint between player and enemy
+            // calculate midpoint between player and enemy
             glm::vec3 midpoint = (player_position + enemy_position) * 0.5f;
 
             // Calculate distance between fighters
             float distance = glm::distance(player_position, enemy_position);
 
-            // Base zoom level - smaller value = more zoomed out
             float base_zoom = 0.5f;
 
-            // Calculate dynamic zoom factor based on distance
-            // The max function ensures we don't zoom in too close
+            // Calculate zoom factor based on distance
+            // the max function ensures we don't zoom in too close
             // The min function ensures we don't zoom out too far
             float zoom_factor = glm::clamp(8.0f / (distance + 4.0f), 0.3f, 1.0f); // need to check with cruz if i can use clamp
 
@@ -377,14 +376,7 @@ void update()
         }
 
 
-        // Only adjust view for game levels
-        /*if (g_current_scene->get_state().player->get_position().x > LEVEL1_LEFT_EDGE) {
-            g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-g_current_scene->get_state().player->get_position().x, 3.75, 0));
-        }
-        else {
-            g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-5, 3.75, 0));
-        }*/
-
+       
         // Scene transitions
         
         //if (g_current_scene == g_levelA && g_current_scene->get_state().enemies[0].get_health() <= 0) switch_to_scene(g_levelB);
