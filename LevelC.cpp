@@ -24,6 +24,9 @@ static float PLAYER_SPEED = 3.0f;
 static bool damage_applied = false;
 static bool damage_applied_to_player = false;
 
+static bool lightning_active = false;
+static float lightning_duration = 0.2f;
+
 
 unsigned int LEVELC_DATA[] =
 {
@@ -43,6 +46,7 @@ LevelC::~LevelC()
     delete[] m_game_state.enemies;
     delete    m_game_state.player;
     delete    m_game_state.map;
+    delete    m_lightning;
     Mix_FreeChunk(m_game_state.jump_sfx);
     Mix_FreeChunk(m_game_state.level_up_sfx);
     Mix_FreeChunk(m_game_state.punch_sfx);
@@ -139,7 +143,7 @@ void LevelC::initialise()
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     m_game_state.enemies[0].set_movement(glm::vec3(0.0f, 0.0f, 0.0f));
     m_game_state.enemies[0].set_scale(2.0f);
-    OutputDebugStringA(("Initial Enemy Position: " + std::to_string(m_game_state.enemies[0].get_position().y) + "\n").c_str());
+    //OutputDebugStringA(("Initial Enemy Position: " + std::to_string(m_game_state.enemies[0].get_position().y) + "\n").c_str());
 
 
     //m_game_state.enemies[0].set_scale(glm::vec3(6.0f, 3.6f, 1.0f)); 
@@ -147,6 +151,17 @@ void LevelC::initialise()
 
     m_game_state.player->set_hits_needed_for_super(3);
     m_game_state.enemies[0].set_hits_needed_for_super(3);
+
+
+    GLuint lightning_texture = Utility::load_texture("assets/single_lightning.png");
+
+    m_lightning = new Entity(lightning_texture, 0.0f, 0.5f, 0.5f, PROJECTILE);
+    m_lightning->set_position(glm::vec3(0.0f)); // might remove this
+    m_lightning->set_scale(glm::vec3(5.0f, 5.0f, 1.0f));
+    m_lightning->deactivate();
+
+    // Disable collision detection for the lightning
+    //m_lightning->set_collision(false);
 
     /**
      BGM and SFX
@@ -163,7 +178,7 @@ void LevelC::update(float delta_time)
 
 
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
-    OutputDebugStringA((std::to_string(m_game_state.enemies[0].get_position().y) + "\n").c_str());
+    //OutputDebugStringA((std::to_string(m_game_state.enemies[0].get_position().y) + "\n").c_str());
     if (m_game_state.enemies[0].get_position().y < -10.0f) {
         // Enemy has fallen too far, reset position
         m_game_state.enemies[0].set_position(INIT_ENEMY_POSITION);
@@ -195,9 +210,59 @@ void LevelC::update(float delta_time)
     for (int i = 0; i < ENEMY_COUNT; i++) {
         m_game_state.enemies[i].update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
         if (m_game_state.enemies[0].get_animation_state() == STATE_SUPER_ATTACK) {
+
             m_game_state.enemies[0].set_scale(3.65f);
             glm::vec3 pos = m_game_state.enemies[0].get_position();
             m_game_state.enemies[0].set_position(glm::vec3(pos.x, -3.75f, pos.z));
+
+            // Activate lightning at start of super attack
+            if (m_game_state.enemies[0].get_animation_index() == 0 && !lightning_active) {
+                OutputDebugString("Activating lightning\n");
+                m_lightning->activate();
+          
+
+                // Position lightning above the enemy
+                glm::vec3 player_pos = m_game_state.player->get_position();
+
+                m_lightning->set_position(glm::vec3(player_pos.x, -3.0f, 0.0f));
+
+                lightning_active = true;
+                lightning_duration = 0.2f;
+            }
+
+            // Update lightning animation
+            if (lightning_active) {
+                m_lightning->update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
+                lightning_duration -= delta_time;
+
+                
+                m_color_inversion_active = true;
+                
+                if (lightning_duration >= 0.1f) {
+                    m_color_inversion_active = true;
+
+                }
+                else {
+                    m_color_inversion_active = false;
+
+                }
+
+
+                // Deactivate when animation completes
+                if (lightning_duration <= 0.0f) {
+                    lightning_active = false;
+                    m_lightning->deactivate();
+                    OutputDebugString("Deactivating lightning\n");
+                    lightning_duration = 0.2f;
+                    m_color_inversion_active = false;
+                }
+            }
+            else {
+                m_color_inversion_active = false;
+
+            }
+
+
         }
         else {
             m_game_state.enemies[0].set_scale(2.0f);
@@ -380,11 +445,20 @@ void LevelC::update(float delta_time)
 
         }
     }
+    // Update lightning animation if active
+    
+    m_lightning->update(delta_time, m_game_state.player, NULL, 0, m_game_state.map);
+
+
+    
+       
+    
 
 }
 
 void LevelC::render(ShaderProgram* program)
 {
+    program->set_invert_colors(m_color_inversion_active ? 1 : 0);
 
     m_game_state.map->render(program);
     m_game_state.player->render(program);
@@ -393,7 +467,12 @@ void LevelC::render(ShaderProgram* program)
     for (int i = 0; i < ENEMY_COUNT; i++) {
         m_game_state.enemies[i].render(program);
     }
-
+    if (lightning_active) {
+        /*OutputDebugString(("Lightning pos: " +
+            std::to_string(m_lightning->get_position().x) + ", " +
+            std::to_string(m_lightning->get_position().y) + "\n").c_str());*/
+        m_lightning->render(program);
+    }
 
 
 

@@ -182,6 +182,8 @@ void initialise()
     g_levels[2]->set_lives(&lives);
     g_levels[3]->set_lives(&lives);
 
+
+
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
     //g_effects->start(SHRINK, 2.0f);
 
@@ -399,6 +401,7 @@ void update()
 void render()
 {
     g_shader_program.set_view_matrix(g_view_matrix);
+    g_shader_program.set_invert_colors(0);
 
     glClear(GL_COLOR_BUFFER_BIT);
 

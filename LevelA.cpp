@@ -12,7 +12,7 @@
 
 static glm::vec3 INIT_PLAYER_POSITION = glm::vec3(3.0f, 0.0f, 0.0f);
 static glm::vec3 INIT_ENEMY_POSITION = glm::vec3(12.0f, 0.0f, 0.0f);
-static int DAMAGE_TO_ENEMY = 10;
+static int DAMAGE_TO_ENEMY = 100;
 static int DAMAGE_TO_PLAYER = 10;
 static int PLAYER_SUPER_DAMAGE = 30;
 
@@ -159,7 +159,7 @@ void LevelA::update(float delta_time)
     
 
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, ENEMY_COUNT, m_game_state.map);
-    OutputDebugStringA((std::to_string(m_game_state.enemies[0].get_position().y) + "\n").c_str());
+    //OutputDebugStringA((std::to_string(m_game_state.enemies[0].get_position().y) + "\n").c_str());
 
 
     // Check if player has fallen off the platform

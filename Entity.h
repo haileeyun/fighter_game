@@ -6,7 +6,7 @@
 #include "ShaderProgram.h"
 #include <unordered_map>
 
-enum EntityType { PLATFORM, PLAYER, ENEMY, PROJECTILE };
+enum EntityType { PLATFORM, PLAYER, ENEMY, PROJECTILE, EFFECT };
 
 enum AIType { WALKER, GUARD, SHOOTER };
 //enum AIState { AI_WALKING, AI_IDLE, AI_ATTACKING, AI_HURT, AI_DEATH };

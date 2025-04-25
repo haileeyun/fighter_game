@@ -13,6 +13,8 @@
 #include "ShaderProgram.h"
 #include "Entity.h"
 #include "Utility.h"
+#include <windows.h>
+
 #define LOG(argument) std::cout << argument << '\n'
 
 
@@ -503,6 +505,7 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
 {
     if (!m_is_active) return;
 
+
     m_collided_top = false;
     m_collided_bottom = false;
     m_collided_left = false;
@@ -598,7 +601,7 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
             if (m_animation_index >= m_animation_frames)
             {
                 // Only reset for looping animations
-                if (m_animation_state != STATE_DEATH) {
+                if (m_animation_state != STATE_DEATH && m_entity_type != EFFECT) {
                     m_animation_index = 0;
                 }
                 else {
@@ -628,14 +631,17 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
         check_collision_with_enemies(collidable_entities, collidable_entity_count);
     }
     
-    else {
+    else if (m_entity_type != EFFECT) {
         // Enemies check collisions normally
         check_collision_y(collidable_entities, collidable_entity_count);
         check_collision_x(collidable_entities, collidable_entity_count);
     }
 
-    check_collision_y(map);
-    check_collision_x(map);
+    if (m_entity_type != EFFECT) {
+        check_collision_y(map);
+        check_collision_x(map);
+    }
+    
     
 
 
@@ -650,6 +656,10 @@ void Entity::render(ShaderProgram* program)
 {
     
     program->set_model_matrix(m_model_matrix);
+    /*if (m_entity_type == EFFECT) {
+        OutputDebugString(("Lightning frame: " +
+            std::to_string(m_animation_index)  + "\n").c_str());
+    }*/
 
     if (m_animation_indices != NULL && m_animation_frames > 0) {
         draw_sprite_from_texture_atlas(program, m_texture_id, m_animation_indices[m_animation_index]);

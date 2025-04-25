@@ -27,6 +27,7 @@ void ShaderProgram::load(const char* vertex_shader_file, const char* fragment_sh
     m_projection_matrix_uniform = glGetUniformLocation(m_program_id, "projectionMatrix");
     m_view_matrix_uniform = glGetUniformLocation(m_program_id, "viewMatrix");
     m_colour_uniform = glGetUniformLocation(m_program_id, "color");
+    m_invert_colors_uniform = glGetUniformLocation(m_program_id, "invert_colors");
 
     m_position_attribute = glGetAttribLocation(m_program_id, "position");
     m_tex_coord_attribute = glGetAttribLocation(m_program_id, "texCoord");
@@ -110,4 +111,9 @@ void ShaderProgram::set_projection_matrix(const glm::mat4& matrix)
 {
     glUseProgram(m_program_id);
     glUniformMatrix4fv(m_projection_matrix_uniform, 1, GL_FALSE, &matrix[0][0]);
+}
+
+void ShaderProgram::set_invert_colors(int invert) {
+    glUseProgram(m_program_id);
+    glUniform1i(m_invert_colors_uniform, invert);
 }

@@ -32,6 +32,9 @@ private:
     GLuint m_vertex_shader;
     GLuint m_fragment_shader;
 
+    GLint m_invert_colors_uniform;
+
+
 public:
 
     void load(const char* vertex_shader_file, const char* fragment_shader_file);
@@ -46,4 +49,8 @@ public:
     GLuint const get_tex_coordinate_attribute() const { return m_tex_coord_attribute; };
 
     void set_program_id(GLuint program_id) { m_program_id = program_id; };
+    void set_invert_colors(int invert);
+
+    //void use();
+
 };
