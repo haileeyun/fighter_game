@@ -103,7 +103,7 @@ void LevelC::initialise()
     GLuint enemy_attack_texture = Utility::load_texture("assets/air_basic_attack.png");
     GLuint enemy_hurt_texture = Utility::load_texture("assets/air_hurt.png");
     GLuint enemy_death_texture = Utility::load_texture("assets/air_death.png");
-    GLuint enemy_super_texture = Utility::load_texture("assets/air_super_attack.png");
+    GLuint enemy_super_texture = Utility::load_texture("assets/air_super.png");
     GLuint enemy_jump_texture = Utility::load_texture("assets/air_jump.png");
     GLuint enemy_fall_texture = Utility::load_texture("assets/air_fall.png");
 
