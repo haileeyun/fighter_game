@@ -242,7 +242,7 @@ void LevelA::update(float delta_time)
                     if (m_game_state.player->check_attack_collision(&m_game_state.enemies[i])) {
                         m_game_state.enemies[i].damage(DAMAGE_TO_ENEMY); 
                         // dont want to interrupt the super attack animation
-                        if (m_game_state.enemies[0].get_animation_state() != STATE_SUPER_ATTACK && m_game_state.enemies[0].get_animation_state() != STATE_ATTACKING) {
+                        if (m_game_state.enemies[0].get_animation_state() != STATE_SUPER_ATTACK) {
                             m_game_state.enemies[i].set_animation_state(STATE_HURT);
 
                         }

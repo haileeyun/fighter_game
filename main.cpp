@@ -355,20 +355,13 @@ void update()
 
 
 
-            // Apply zoom and center on midpoint
-            //g_view_matrix = glm::scale(g_view_matrix, glm::vec3(zoom_factor, zoom_factor, 1.0f));
-            //g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-midpoint.x, 3.75f, 0.0f));
-
-
-            // Then modify the camera code to smoothly transition:
+            // modify the camera code to smoothly transition
             glm::vec3 target_position = glm::vec3(-midpoint.x, 3.75f, 0.0f);
             float target_zoom = glm::clamp(8.0f / (distance + 4.0f), 0.3f, 1.0f);
 
-            // Smooth lerp to target values
             g_camera_position = g_camera_position + (target_position - g_camera_position) * 0.1f;
             g_camera_zoom = g_camera_zoom + (target_zoom - g_camera_zoom) * 0.05f;
 
-            // Apply smoothed values
             g_view_matrix = glm::scale(g_view_matrix, glm::vec3(g_camera_zoom, g_camera_zoom, 1.0f));
             g_view_matrix = glm::translate(g_view_matrix, g_camera_position);
 
