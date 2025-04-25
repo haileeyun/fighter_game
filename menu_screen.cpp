@@ -33,6 +33,10 @@ void MenuScreen::render(ShaderProgram* program)
     Utility::draw_text(program, Utility::load_texture("assets/white_font_sheet.png"),
         "Welcome", 0.7f, 0.0f, glm::vec3(-2.0f, 0.5f, 0.0f));
     Utility::draw_text(program, Utility::load_texture("assets/white_font_sheet.png"),
-        "Press Enter", 0.5f, 0.0f, glm::vec3(-2.5f, -0.5f, 0.0f));
+        "Use arrows to move.", 0.3f, 0.0f, glm::vec3(-2.5f, -0.5f, 0.0f));
+    Utility::draw_text(program, Utility::load_texture("assets/white_font_sheet.png"),
+        "X for attack and S for super.", 0.3f, 0.0f, glm::vec3(-4.0f, -1.5f, 0.0f));
+    Utility::draw_text(program, Utility::load_texture("assets/white_font_sheet.png"),
+        "Press Enter", 0.5f, 0.0f, glm::vec3(-2.5f, -2.5f, 0.0f));
 
 }
