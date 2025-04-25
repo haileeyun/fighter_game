@@ -95,6 +95,11 @@ int lives;
 Mix_Music* g_bgm = nullptr;
 
 GLuint g_background_texture;
+GLuint g_background_texture_level_A;
+GLuint g_background_texture_level_B;
+GLuint g_background_texture_level_C;
+
+
 glm::mat4 g_background_matrix;
 
 GLuint g_font_texture_id;
@@ -152,6 +157,10 @@ void initialise()
 
     //glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
     g_background_texture = Utility::load_texture("assets/purple_clouds.png");
+    g_background_texture_level_A = Utility::load_texture("assets/sunset.png");
+    g_background_texture_level_B = Utility::load_texture("assets/blue_sky.png");
+    g_background_texture_level_C = Utility::load_texture("assets/night_sky.png");
+
     g_background_matrix = glm::mat4(1.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -411,7 +420,22 @@ void render()
     float vertices[] = { -5.0, -3.75, 5.0, -3.75, 5.0, 3.75, -5.0, -3.75, 5.0, 3.75, -5.0, 3.75 };
     float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
 
-    glBindTexture(GL_TEXTURE_2D, g_background_texture);
+    if (g_current_scene == g_levelA) {
+        glBindTexture(GL_TEXTURE_2D, g_background_texture_level_A);
+
+    }
+    else if (g_current_scene == g_levelB) {
+        glBindTexture(GL_TEXTURE_2D, g_background_texture_level_B);
+
+    }
+    else if (g_current_scene == g_levelC) {
+        glBindTexture(GL_TEXTURE_2D, g_background_texture_level_C);
+
+    }
+    else {
+        glBindTexture(GL_TEXTURE_2D, g_background_texture);
+
+    }
 
     glVertexAttribPointer(g_shader_program.get_position_attribute(), 2, GL_FLOAT, false, 0, vertices);
     glEnableVertexAttribArray(g_shader_program.get_position_attribute());
@@ -450,7 +474,7 @@ void render()
             player_super_text += std::to_string(g_current_scene->get_state().player->get_hits_landed()) + "/" +
                 std::to_string(g_current_scene->get_state().player->get_hits_needed_for_super());
         }
-        Utility::draw_text(&g_shader_program, g_font_texture_id, player_super_text, 0.3f, 0.0f, glm::vec3(-0.5f, 3.25f, 0.0f));
+        Utility::draw_text(&g_shader_program, g_font_texture_id, player_super_text, 0.3f, 0.0f, glm::vec3(-0.9f, 3.25f, 0.0f));
 
         std::string enemy_super_text = "Enemy Super: ";
         if (g_current_scene->get_state().enemies[0].is_super_ready()) {
@@ -460,7 +484,7 @@ void render()
             enemy_super_text += std::to_string(g_current_scene->get_state().enemies[0].get_hits_landed()) + "/" +
                 std::to_string(g_current_scene->get_state().enemies[0].get_hits_needed_for_super());
         }
-        Utility::draw_text(&g_shader_program, g_font_texture_id, enemy_super_text, 0.3f, 0.0f, glm::vec3(0.0f, 2.5f, 0.0f));
+        Utility::draw_text(&g_shader_program, g_font_texture_id, enemy_super_text, 0.3f, 0.0f, glm::vec3(-0.5f, 2.5f, 0.0f));
 
 
         // Enemy health in bottom right corner

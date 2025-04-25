@@ -58,5 +58,8 @@ public:
 
     // SETTERS
     void set_lives(int* lives) { this->lives = lives; }
+    GLuint background_texture_id;
+
+
 
 };
